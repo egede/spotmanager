@@ -1,14 +1,14 @@
 import unittest
 
-from instance import instance
+from instance import Instance
 
-class FroniusTestCase(unittest.TestCase):
+class InstanceTestCase(unittest.TestCase):
 
-    def test_start():
+    def test_start(self):
         i = instance()
         i.start()
 
-    def test_stop():
+    def test_stop(self):
         i = instance()
         i.stop()
 

@@ -1,14 +1,14 @@
 """Manange instances in an openstack cloud"""
-class instance():
+class Instance():
 
-    def start():
+    def start(self):
         print('start')
 
-    def stop():
+    def stop(self):
         print('stop')
 
-    def busy():
+    def busy(self):
         return True
 
-    def uptime():
+    def uptime(self):
         return 0
