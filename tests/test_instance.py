@@ -1,6 +1,6 @@
 import unittest
 
-from instance import Instance
+from spotmanager.instance import Instance
 
 class InstanceTestCase(unittest.TestCase):
 
