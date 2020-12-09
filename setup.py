@@ -144,6 +144,8 @@ setup(
     install_requires=[
         'python-openstackclient',
         'python-dateutil',
+        'parallel-ssh',
+        'gevent',
     ],
 
     # List additional groups of dependencies here (e.g. development
