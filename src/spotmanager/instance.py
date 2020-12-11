@@ -1,58 +1,71 @@
-"""Manage the comunication with an instance"""
+"""Manage the comunication with an Openstack instance"""
+import subprocess
+import re
+
 from os.path import basename
 
 from pssh.clients import ParallelSSHClient
+from pssh.exceptions import Timeout
 from gevent import joinall
 
 class instance():
+    """Manage the communication with a set of Openstack instances. This includes the ability to configure
+    them, run commands on them, check if they are active as Condor worker nodes etc."""
 
     def __init__(self, instances):
-        self.hosts = [i.ip for i in instances]
+        self.hosts = instances
     
-    def command(self, command, timeout=60):
-        """Cary out a command on the instances. This will be done using an ssh command and using sudo"""
-        client = ParallelSSHClient(hosts)
-
-        output = client.run_command(command, pkey='~/.ssh/my_pkey', read_timeout=timeout, sudo=True)
-
+    def command(self, command, timeout=60, sudo=False):
+        """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
+        client = ParallelSSHClient([i.ip for i in self.hosts])
+        output = client.run_command(command, read_timeout=timeout, sudo=sudo)
+        client.join()
         return output
-        # for host_out in output:
-        #     try:
-        #         for line in host_out.stdout:
-        #             print(line)
-        #         for line in host_out.stderr:
-        #             print(line)
-        #     except Timeout:
-        #         pass
-
 
     def copy(self, fname):
         """Copy a file to all the instances."""
-        client = ParallelSSHClient(hosts, timeout=60)
+        client = ParallelSSHClient([i.ip for i in self.hosts], timeout=60)
         cmds = client.scp_send(fname, basename(fname))
         joinall(cmds, raise_error=True)
         
     def configure(self):
+        """Carry out the configuration of all the instances using a predefined configuration script and finishing
+        with a reboot of all the instances (to upgrade the kernel)."""
         self.copy('spot-configure')
 
-        self.command('yum -y update')
-        self.command('./spot-configure', timeout=600)
-        self.command('shutdown -r now')
+        self.command('yum -y update', timeout=600, sudo=True)
+        self.command('./spot-configure', timeout=600, sudo=True)
+        self.command('shutdown -r now', sudo=True)
 
-    def load(self):
-        loads = []
-        output = self.command("uptime | awk -F'[a-z,]:' '{ print $2}' | awk -F',' '{ print $3}'")
-        for ip, o in zip(self.hosts, host.output):
+    def loadaverage(self):
+        """Return a dictionary of the instances with the average load per cpu for each of them"""
+        loads = {}
+        output1 = self.command("uptime | awk -F'[a-z,]:' '{ print $2}' | awk -F',' '{ print $3}'")
+        output2 = self.command("lscpu | grep ^CPU\(s\): | cut -d : -f 2")
+        for h, o1, o2 in zip(self.hosts, output1, output2):
             try:
-                loads.append([ip, float(o.stdout.read())])
+                loads[h.name] = float(next(o1.stdout))/float(next(o2.stdout))
             except Timeout:
                 pass
         return loads
         
     def condor_status(self):
-        return True
+        output = subprocess.run('condor_status', capture_output=True, encoding='utf-8').stdout
 
+        status = {}
+        for line in output.split():
+            match = re.match(r'^slot[0-9]+(\w+).*Claimed\s+(\w+)', line)
+            if match:
+                status[match.group(1)] = match.group(2)
+        return status
 
+        
     def condor_retire(self):
-        "condor_off -startd -peaceful 192.168.0.19"
-        pass
+        """Retire the instances from condor. This means that jobs keep running on them, but they will
+        not accept new jobs."""
+        commands = [f"condor_off -startd -peaceful {host.name}" for host in self.hosts]
+           
+        server = ['server']*len(commands)
+        client = ParallelSSHClient(server)
+
+        output = client.run_command('%s', host_args=commands, sudo=True) 

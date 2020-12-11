@@ -29,11 +29,17 @@ class OpenstackTestCase(unittest.TestCase):
         mock_session.assert_called()
         mock_nova.assert_called()
 
-        m = mock.Mock()
-        m.status='TEST'
-        m.name='test'
-        m.created = '2020-12-08T04:31:54Z'
-        self.os.nova.servers.list.return_value = [m, m]
+        class tmp():
+            def __init__(self):
+                self.networks = {'lhcb':['192.168.0.1']}
+                self.status='TEST'
+                self.name='test'
+                self.created = '2020-12-08T04:31:54Z'
+
+            def delete(self):
+                pass
+                
+        self.os.nova.servers.list.return_value = [tmp(), tmp()]
         
     def tearDown(self):
         self.td.cleanup()
@@ -46,6 +52,7 @@ class OpenstackTestCase(unittest.TestCase):
         assert(len(instances) == 2)
         assert(instances[0].name=='test')
         assert(instances[0].status=='TEST')
+        assert(instances[0].ip=='192.168.0.1')
 
     def test_delete(self):
         instances = self.os.instances()
