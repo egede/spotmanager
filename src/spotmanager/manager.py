@@ -10,14 +10,14 @@ class instance():
         self.os = openstack(configfile)
     
     def event(self):
-        instances = self.os.instances()
+        # instances = self.os.instances()
 
-        tokill = []
-        tomute = []
+        # tokill = []
+        # tomute = []
 
-        for i in instances:
-            if i.uptime > datetime.timedelta(hours=1):
-                if busy(i)
+        # for i in instances:
+        #     if i.uptime > datetime.timedelta(hours=1):
+        #         if busy(i)
 
     def start(self):
         print('start')
