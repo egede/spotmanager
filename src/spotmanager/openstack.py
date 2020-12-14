@@ -1,8 +1,7 @@
 """Manage the connections to the openstack API"""
-import time
-import subprocess
 import datetime
 import dateutil.parser
+import subprocess
 
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
@@ -65,19 +64,20 @@ class openstack():
 
         class server():
 
-            def __init__(self, server, name, status, uptime):
+            def __init__(self, server, name, status, uptime, ip):
                 self.server = server
                 self.name = name
                 self.status = status
                 self.uptime = uptime
+                self.ip = ip
 
             def __str__(self):
                 uphours = self.uptime.total_seconds() / 3600
-                return f'Name: {self.name}, Status: {self.status}, Uptime = {uphours:.1f} hours'
+                return f'Name: {self.name}, Status: {self.status}, Uptime = {uphours:.1f} hours, IP = {self.ip}'
 
             def __repr__(self):
                 uphours = self.uptime.total_seconds() / 3600
-                return f'server({repr(self.server)}, {self.name}, {self.status}, {repr(self.uptime)})'
+                return f'server({repr(self.server)}, {self.name}, {self.status}, {repr(self.uptime)}, {self.ip})'
 
             def delete(self):
                 self.server.delete()
@@ -87,7 +87,7 @@ class openstack():
         for s in self.nova.servers.list():
             start = s.created
             uptime = datetime.datetime.now(tz=datetime.timezone.utc)-dateutil.parser.isoparse(start)
-            servers.append(server(s, s.name, s.status, uptime))
+            servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb'][0]))
         return servers
         
 
