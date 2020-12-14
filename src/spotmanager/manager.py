@@ -10,6 +10,7 @@ class instance():
         self.os = openstack(configfile)
     
     def event(self):
+        pass
         # instances = self.os.instances()
 
         # tokill = []
