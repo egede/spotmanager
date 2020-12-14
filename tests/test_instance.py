@@ -3,6 +3,7 @@ import unittest
 from unittest import mock
 
 from spotmanager.instance import instance
+from pssh.exceptions import Timeout
 
 class InstanceTestCase(unittest.TestCase):
 
@@ -72,7 +73,7 @@ class InstanceTestCase(unittest.TestCase):
 
         assert(mock_command.call_count==2)
         assert(loads=={'test1':1.23, 'test2':0.456})
-
+        
     @mock.patch('spotmanager.instance.subprocess.run')
     def test_condor_status(self, mock_run):
 
@@ -121,3 +122,15 @@ slot8@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+03:24
         assert(mock_run.call_count==1)
         assert(status=={'batch':'Busy', 'batch2':'Retired'})
 
+
+    @mock.patch('spotmanager.instance.ParallelSSHClient')
+    def test_condor_retire(self, mock_ssh):
+
+        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
+                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+        i = instance(hosts)
+
+        i.condor_retire()
+
+        mock_ssh.assert_called_with(['server', 'server'])
+        self.assertIn(mock.call().run_command('%s', host_args=['condor_off -startd -peaceful test1', 'condor_off -startd -peaceful test2'], sudo=True), mock_ssh.mock_calls)

@@ -43,10 +43,7 @@ class instance():
         output1 = self.command("uptime | awk -F'[a-z,]:' '{ print $2}' | awk -F',' '{ print $3}'")
         output2 = self.command("lscpu | grep ^CPU(s): | cut -d : -f 2")
         for h, o1, o2 in zip(self.hosts, output1, output2):
-            try:
-                loads[h.name] = float(next(o1.stdout))/float(next(o2.stdout))
-            except Timeout:
-                pass
+            loads[h.name] = float(next(o1.stdout))/float(next(o2.stdout))
         return loads
         
     def condor_status(self):
