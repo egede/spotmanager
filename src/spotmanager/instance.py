@@ -41,7 +41,7 @@ class instance():
         """Return a dictionary of the instances with the average load per cpu for each of them"""
         loads = {}
         output1 = self.command("uptime | awk -F'[a-z,]:' '{ print $2}' | awk -F',' '{ print $3}'")
-        output2 = self.command("lscpu | grep ^CPU\(s\): | cut -d : -f 2")
+        output2 = self.command("lscpu | grep ^CPU(s): | cut -d : -f 2")
         for h, o1, o2 in zip(self.hosts, output1, output2):
             try:
                 loads[h.name] = float(next(o1.stdout))/float(next(o2.stdout))
@@ -51,10 +51,11 @@ class instance():
         
     def condor_status(self):
         output = subprocess.run('condor_status', capture_output=True, encoding='utf-8').stdout
-
+        print(output.split('\n'))
+        
         status = {}
-        for line in output.split():
-            match = re.match(r'^slot[0-9]+(\w+).*Claimed\s+(\w+)', line)
+        for line in output.split('\n'):
+            match = re.match(r'^slot[0-9]+@([0-9\w]+).*Claimed\s+(\w+)', line)
             if match:
                 status[match.group(1)] = match.group(2)
         return status
