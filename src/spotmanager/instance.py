@@ -47,7 +47,7 @@ class instance():
         return loads
         
     def condor_status(self):
-        output = subprocess.run('condor_status', capture_output=True, encoding='utf-8').stdout
+        output = subprocess.run('condor_status', stdout=subprocess.PIPE, encoding='utf-8').stdout
         print(output.split('\n'))
         
         status = {}
