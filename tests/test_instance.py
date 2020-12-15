@@ -33,7 +33,7 @@ class InstanceTestCase(unittest.TestCase):
         i.copy('/foo/myfile')
 
         mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], timeout=60)
-        self.assertIn(mock.call().scp_send('/foo/myfile', 'myfile'), mock_ssh.mock_calls)
+        self.assertIn(mock.call().copy_file('/foo/myfile', 'myfile'), mock_ssh.mock_calls)
 
     @mock.patch('spotmanager.instance.instance.copy')
     @mock.patch('spotmanager.instance.instance.command')
