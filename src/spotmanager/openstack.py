@@ -1,7 +1,11 @@
 """Manage the connections to the openstack API"""
 import datetime
-import dateutil.parser
 import subprocess
+import shutil
+import tempfile
+import dateutil.parser
+
+from os.path import join, abspath, expanduser
 
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
@@ -14,16 +18,26 @@ class openstack():
         """Object that will manage the connections to openstack. You need to give the path to the file that
         contains the openstack RC."""
 
-        proc = subprocess.Popen(['bash', '-c',
-                                 f'source {configfile} && echo OS_AUTH_URL=$OS_AUTH_URL && echo OS_USERNAME=$OS_USERNAME && echo OS_PASSWORD=$OS_PASSWORD && echo OS_PROJECT_ID=$OS_PROJECT_ID && echo OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME'],
-                                stdout=subprocess.PIPE)
-        env = {tup[0].strip(): tup[1].strip() for tup in map(lambda s: s.decode('utf-8').strip().split('=', 1),
+        abs_fname = abspath(expanduser(configfile))
+        
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            authfile = join(tmpdirname, 'authenticate')
+            with open(authfile, 'w') as f:
+                f.write(f'source {abs_fname}\n')
+                f.write('echo OS_AUTH_URL=$OS_AUTH_URL\n')
+                f.write('echo OS_USERNAME=$OS_USERNAME\n')
+                f.write('echo OS_PASSWORD=$OS_PASSWORD\n')
+                f.write('echo OS_PROJECT_ID=$OS_PROJECT_ID\n')
+                f.write('echo OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME\n')
+            proc = subprocess.Popen(['bash', '-c', f'source {authfile}'], stdout=subprocess.PIPE)
+            env = {tup[0].strip(): tup[1].strip() for tup in map(lambda s: s.decode('utf-8').strip().split('=', 1),
                                                              proc.stdout)}
-        auth = v3.Password(auth_url=env['OS_AUTH_URL'],
-                           username=env['OS_USERNAME'],
-                           password=env['OS_PASSWORD'],
-                           project_id=env['OS_PROJECT_ID'],
-                           user_domain_name=env['OS_USER_DOMAIN_NAME'])
+            auth = v3.Password(auth_url=env['OS_AUTH_URL'],
+                               username=env['OS_USERNAME'],
+                               password=env['OS_PASSWORD'],
+                               project_id=env['OS_PROJECT_ID'],
+                               user_domain_name=env['OS_USER_DOMAIN_NAME'])
+
         self.session = session.Session(auth=auth)
         self.nova = nova_client('2.1',session=self.session)
 
