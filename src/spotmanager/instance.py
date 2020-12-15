@@ -36,7 +36,7 @@ class instance():
         print('Updating instances')
         self.command('yum -y update', timeout=600, sudo=True)
         print('Configuring instances')
-        self.command('chmod + x ./spot-configure', timeout=600, sudo=True)
+        self.command('chmod +x ./spot-configure', timeout=600, sudo=True)
         self.command('./spot-configure', timeout=600, sudo=True)
         print('Rebooting instances')
         self.command('shutdown -r +1', sudo=True)
