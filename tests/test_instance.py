@@ -3,7 +3,6 @@ import unittest
 from unittest import mock
 
 from spotmanager.instance import instance
-from pssh.exceptions import Timeout
 
 class InstanceTestCase(unittest.TestCase):
 
