@@ -58,7 +58,7 @@ class openstack():
         os =  spotmanager.openstack.openstack('myproject-openrc.sh')
         l = os.instances()
         
-        The list elements are a simple objects that contain the link to a server object, the name,
+        The list elements are a simple object that contain the link to a server object, the name,
         the status and the uptime.
         """
 
