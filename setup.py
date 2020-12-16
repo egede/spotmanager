@@ -182,7 +182,7 @@ setup(
     # executes the function `main` from this package when invoked:
     entry_points={  # Optional
         'console_scripts': [
-            'driver=driver:main',
+            'controller=spotmanager.controller:main',
         ],
     },
 
