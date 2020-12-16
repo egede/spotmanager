@@ -18,7 +18,7 @@ class manager():
     
     def event(self, maxhosts=25, sleepfactor=1):
         hosts = self.os.instances()
-        logger.info('Running hosts: {[h.name for h in hosts]}')
+        logger.info(f'Running hosts: {[h.name for h in hosts]}')
         instances = instance(hosts)
         status = instances.condor_status()
         tokill = []
@@ -32,12 +32,12 @@ class manager():
                 if h.uptime > datetime.timedelta(hours=4):
                     toretire.append(h)
 
-        logger.info('Will kill the hosts: {[h.name for h in tokill]}')
+        logger.info(f'Will kill the hosts: {[h.name for h in tokill]}')
         self.os.delete(tokill)
         time.sleep(sleepfactor*20)
 
         retire_instances = instance(toretire)
-        logger.info('Will retire the hosts: {[h.name for h in toretire]}')
+        logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
         retire_instances.condor_retire()
 
         n_newhosts = maxhosts - len(hosts)
@@ -51,6 +51,6 @@ class manager():
 
             allhosts = self.os.instances()
             newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
-            logger.info('{len(newhosts} created with names {[h.name for h in newhosts]}')
+            logger.info(f'{len(newhosts)} created with names {[h.name for h in newhosts]}')
             newinstances = instance(newhosts)
             newinstances.configure()
