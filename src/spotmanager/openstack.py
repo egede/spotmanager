@@ -3,6 +3,7 @@ import datetime
 import subprocess
 import shutil
 import tempfile
+import logging
 import dateutil.parser
 
 from os.path import join, abspath, expanduser
@@ -10,6 +11,8 @@ from os.path import join, abspath, expanduser
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from novaclient.client import Client as nova_client
+
+logger = logging.getLogger(__name__)
 
 class openstack():
 
@@ -40,11 +43,12 @@ class openstack():
 
         self.session = session.Session(auth=auth)
         self.nova = nova_client('2.1',session=self.session)
+        logger.info(f"Project is: user: {env['OS_USERNAME']}, project: {env['OS_PROJECT_ID']}, domain: {env['OS_USER_DOMAIN_NAME']}")
 
     def create(self, name='test', min=1, max=1):
         instance = self.nova.servers.create(name,
                                             image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
-                                            flavor=self.nova.flavors.find(name='m3.small'),
+                                            flavor=self.nova.flavors.find(name='m3.medium'),
                                             nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
                                             key_name='rsa',
                                             security_group='default',
@@ -63,6 +67,7 @@ class openstack():
         os.delete(l)
         """
         for s in servers:
+            logger.debug(f'Deleting {s}')
             s.delete()
 
     def instances(self):
@@ -102,6 +107,7 @@ class openstack():
             start = s.created
             uptime = datetime.datetime.now(tz=datetime.timezone.utc)-dateutil.parser.isoparse(start)
             servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb'][0]))
+        logger.debug(f'Created servers: {[str(s) for s in servers]}')
         return servers
         
 
