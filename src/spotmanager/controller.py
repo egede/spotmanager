@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import argparse
 
 from logging.handlers import RotatingFileHandler
 
@@ -7,19 +8,43 @@ from spotmanager.manager import manager
 
 def main():
 
-    # create logger
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    fh = RotatingFileHandler('spotmanager.log', maxBytes=1000000, backupCount=5)
-    fh.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+    
+    ap = argparse.ArgumentParser(description='Manage spot instances on Nectar')
+    ap.add_argument("-v", "--verbose", action="count",
+                    help="Increase verbosity by enabling DEBUG in the logger.")
+    ap.add_argument("-s", "--stdout", action="count",
+                    help="Perform logging to stdout instead of a file")
+    ap.add_argument("-l", "--logfile", default="spotmanager.log",
+                    help="File to write logging information to.")
+    ap.add_argument("-n", "--number-hosts", type=int, default=25,
+                    help="The maximum number of hosts to have at the same time.")
+    ap.add_argument("-c", "--configfile", default='ppoc-1-openrc.sh',
+                    help="The files that contains the .rc file for access to Nectar.")
+
+    args = ap.parse_args()
+
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
+    if args.stdout:
+        lh = logging.StreamHandler()
+        lh.setFormatter(formatter)
+        logger.addHandler(lh)
+    else:
+        fname = args.logfile
+        fh = RotatingFileHandler(fname, maxBytes=1000000, backupCount=5)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
     
     logger.info('Starting')
-    m = manager()
-    m.event()
+    logger.debug('Verbose mode is enabled.')
+    m = manager(args.configfile)
+    m.event(maxhost=args.number_hosts)
     logger.info('Stopping')
 
 if __name__ == '__main__':
