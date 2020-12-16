@@ -44,7 +44,7 @@ def main():
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
     m = manager(args.configfile)
-    m.event(maxhost=args.number_hosts)
+    m.event(maxhosts=args.number_hosts)
     logger.info('Stopping')
 
 if __name__ == '__main__':
