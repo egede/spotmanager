@@ -53,20 +53,35 @@ class instance():
     def condor_status(self):
         output = subprocess.run('condor_status', stdout=subprocess.PIPE, encoding='utf-8').stdout
         
-        status = {}
+        status = []
         for line in output.split('\n'):
-            match = re.match(r'^slot[0-9]+@([0-9\w]+).*Claimed\s+(\w+)', line)
+            match = re.match(
+                r'^slot[0-9]+@(?P<fullhost>(?P<host>[-0-9\w]+)[\.-0-9\w]+).*'+
+                '(?P<state>Unclaimed|Claimed)\s+'+
+                '(?P<activity>\w+).*?'+
+                '(?P<load>[\.0-9]+)', line)
             if match:
-                status[match.group(1)] = match.group(2)
+                status.append(match.groupdict())
         return status
 
         
     def condor_retire(self):
         """Retire the instances from condor. This means that jobs keep running on them, but they will
         not accept new jobs."""
-        commands = [f"condor_off -startd -peaceful {host.name}" for host in self.hosts]
-           
-        server = ['server']*len(commands)
+        status = self.condor_status()
+        print('************************')
+        print(status)
+        print('************************')
+        commands = {}
+        for host in self.hosts:
+            print(host.name)
+            for s in status:
+                if s['host']==host.name:
+                    commands[host.name] = s['fullhost']
+                    
+        commandlist = [f"condor_off -startd -peaceful {c}" for c in commands.values()]
+        print(commandlist)
+        server = ['server']*len(commandlist)
         client = ParallelSSHClient(server)
 
-        output = client.run_command('%s', host_args=commands, sudo=True) 
+        output = client.run_command('%s', host_args=commandlist, sudo=True) 
