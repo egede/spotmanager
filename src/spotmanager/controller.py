@@ -18,13 +18,13 @@ def main():
                     help="Perform logging to stdout instead of a file")
     ap.add_argument("-l", "--logfile", default="spotmanager.log",
                     help="File to write logging information to.")
-    ap.add_argument("-n", "--number-hosts", help="The maximum number of hosts to have at the same time.")
+    ap.add_argument("-n", "--number-hosts", type=int, default=25,
+                    help="The maximum number of hosts to have at the same time.")
+    ap.add_argument("-c", "--configfile", default='ppoc-1-openrc.sh',
+                    help="The files that contains the .rc file for access to Nectar.")
 
     args = ap.parse_args()
 
-    print('*****')
-    print(args.verbose)
-    print('*****')
     if args.verbose:
         logger.setLevel(logging.DEBUG)
     else:
@@ -43,8 +43,8 @@ def main():
     
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
-    m = manager()
-    m.event()
+    m = manager(args.configfile)
+    m.event(maxhost=args.number_hosts)
     logger.info('Stopping')
 
 if __name__ == '__main__':
