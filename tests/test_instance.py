@@ -84,30 +84,12 @@ class InstanceTestCase(unittest.TestCase):
         mock_run.return_value.stdout= """
 Name                   OpSys      Arch   State     Activity LoadAv Mem   ActvtyTime
 
-slot1@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+00:18:31
-slot2@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+04:16:28
-slot3@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+02:11:51
-slot4@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+05:53:34
-slot5@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+11:37:59
-slot6@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+09:10:35
-slot7@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+05:26:49
-slot8@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+00:38:31
-slot9@batch.novalocal  LINUX      X86_64 Claimed   Busy      1.030 2000  0+02:06:51
-slot10@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+04:47:28
-slot11@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+05:59:54
-slot12@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+06:26:49
-slot13@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+02:28:31
-slot14@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+07:57:59
-slot15@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+06:47:32
-slot16@batch.novalocal LINUX      X86_64 Claimed   Busy      1.030 2000  0+07:11:54
-slot1@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+10:47:10
-slot2@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+04:42:01
-slot3@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+05:15:22
-slot4@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+16:24:31
-slot5@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+07:30:12
-slot6@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+16:05:36
-slot7@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+14:38:35
-slot8@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+03:24:25
+slot14@batch.novalocal LINUX      X86_64 Claimed     Idle      0.000 2000  0+07:57:59
+slot15@batch.novalocal LINUX      X86_64 Claimed     Busy      1.030 2000  0+06:47:32
+slot16@batch.novalocal LINUX      X86_64 Claimed     Busy      1.030 2000  0+07:11:54
+slot1@batch2.novalocal LINUX      X86_64 Unclaimed   Retired   1.020 1985  0+10:47:10
+slot2@batch2.novalocal LINUX      X86_64 Claimed     Retired   1.020 1985  0+04:42:01
+
 
                Machines Owner Claimed Unclaimed Matched Preempting  Drain
 
@@ -119,17 +101,39 @@ slot8@batch2.novalocal LINUX      X86_64 Claimed   Retired   1.020 1985  0+03:24
         status = i.condor_status()
 
         assert(mock_run.call_count==1)
-        assert(status=={'batch':'Busy', 'batch2':'Retired'})
+        assert(status==[
+            {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Idle', 'load': '0.000'},
+            {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Busy', 'load': '1.030'},
+            {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Busy', 'load': '1.030'},
+            {'fullhost':'batch2.novalocal', 'host':'batch2', 'state':'Unclaimed', 'activity':'Retired',
+             'load': '1.020'},
+            {'fullhost':'batch2.novalocal', 'host':'batch2', 'state':'Claimed', 'activity':'Retired',
+             'load': '1.020'},
+        ])
 
-
+    @mock.patch('spotmanager.instance.instance.condor_status')
     @mock.patch('spotmanager.instance.ParallelSSHClient')
-    def test_condor_retire(self, mock_ssh):
+    def test_condor_retire(self, mock_ssh, mock_condor_status):
 
-        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
-                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+        hosts = [InstanceTestCase.TestHost('batch','192.168.0.1'),
+                 InstanceTestCase.TestHost('batch2', '192.168.0.2')]
         i = instance(hosts)
+
+        mock_condor_status.side_effect=[ [
+            {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Idle', 'load': '0.000'},
+            {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Busy', 'load': '1.030'},
+            {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Busy', 'load': '1.030'},
+            {'fullhost':'batch2.novalocal', 'host':'batch2', 'state':'Unclaimed', 'activity':'Retired',
+             'load': '1.020'},
+            {'fullhost':'batch2.novalocal', 'host':'batch2', 'state':'Claimed', 'activity':'Retired',
+             'load': '1.020'},
+        ] ]  
 
         i.condor_retire()
 
         mock_ssh.assert_called_with(['server', 'server'])
-        self.assertIn(mock.call().run_command('%s', host_args=['condor_off -startd -peaceful test1', 'condor_off -startd -peaceful test2'], sudo=True), mock_ssh.mock_calls)
+        self.assertIn(mock.call().run_command('%s',
+                                              host_args=['condor_off -startd -peaceful batch.novalocal',
+                                                         'condor_off -startd -peaceful batch2.novalocal'],
+                                              sudo=True),
+                      mock_ssh.mock_calls)

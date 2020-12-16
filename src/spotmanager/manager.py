@@ -14,24 +14,22 @@ class manager():
     def event(self, maxhosts=25, sleepfactor=1):
         hosts = self.os.instances()
         instances = instance(hosts)
-        loads = instances.loadaverage()
         status = instances.condor_status()
         tokill = []
         toretire = []
 
         for h in hosts:
-            print(h.name)
-            try:
-                if status[h.name] == 'Retired' and loads[h.name]<0.1:
-                    tokill.append(h)
-                    continue
-                if status[h.name] == 'Busy' and h.uptime > datetime.timedelta(hours=1):
-                    toretire.append(h)
-            except KeyError:
-                print(f'The host {h.name} is not running Condor or is not responding. Will kill it')
+            kill = not h.name in [s['host'] for s in status]
+            if kill:
                 tokill.append(h)
+            else:
+                if h.uptime > datetime.timedelta(hours=4):
+                    toretire.append(h)
 
         self.os.delete(tokill)
+        print('The following servers could be killed')
+        for h in tokill:
+            print(h)
         time.sleep(sleepfactor*20)
 
         retire_instances = instance(toretire)
