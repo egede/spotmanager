@@ -13,13 +13,14 @@ class manager():
     """The manager class will through its event method query for the existence of running instances,
     retire from the condor queue servers that have been alive for a while (to prevent jobs running when 
     machines are pulled down), will pull down idle machines and finally create new ones."""
-    def __init__(self, configfile):
+    def __init__(self, configfile, keysfile):
         self.os = openstack(configfile)
+        self.keysfile = keysfile
     
     def event(self, maxhosts=25, sleepfactor=1):
         hosts = self.os.instances()
         logger.info(f'Running hosts: {[h.name for h in hosts]}')
-        instances = instance(hosts)
+        instances = instance(hosts, self.keysfile)
         status = instances.condor_status()
         tokill = []
         toretire = []
@@ -52,5 +53,5 @@ class manager():
             allhosts = self.os.instances()
             newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
             logger.info(f'{len(newhosts)} created with names {[h.name for h in newhosts]}')
-            newinstances = instance(newhosts)
+            newinstances = instance(newhosts, self.keysfile)
             newinstances.configure()

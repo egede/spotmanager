@@ -15,21 +15,22 @@ class instance():
     """Manage the communication with a set of Openstack instances. This includes the ability to configure
     them, run commands on them, check if they are active as Condor worker nodes etc."""
 
-    def __init__(self, instances):
+    def __init__(self, instances, keysfile):
         self.hosts = instances
+        self.keysfile = keysfile
         logger.debug('Dealing with hosts {[h.name for h in self.hosts]}')
         
     def command(self, command, timeout=60, sudo=False):
         """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
         logger.debug(f'Executing {command} with sudo {sudo}.')
-        client = ParallelSSHClient([i.ip for i in self.hosts])
+        client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
         output = client.run_command(command, read_timeout=timeout, sudo=sudo)
         client.join()
         return output
 
     def copy(self, fname):
         """Copy a file to all the instances."""
-        client = ParallelSSHClient([i.ip for i in self.hosts], timeout=60)
+        client = ParallelSSHClient([i.ip for i in self.hosts], timeout=60, pkey=self.keysfile)
         logger.debug(f'Copy file {fname}.')
         cmds = client.copy_file(fname, basename(fname))
         joinall(cmds, raise_error=True)
@@ -85,6 +86,6 @@ class instance():
         commandlist = [f"condor_off -startd -peaceful {c}" for c in commands.values()]
         logger.debug(commandlist)
         server = ['server']*len(commandlist)
-        client = ParallelSSHClient(server)
+        client = ParallelSSHClient(server, pkey=self.keysfile)
 
         output = client.run_command('%s', host_args=commandlist, sudo=True) 

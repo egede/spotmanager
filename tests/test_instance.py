@@ -16,11 +16,11 @@ class InstanceTestCase(unittest.TestCase):
 
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
-        i = instance(hosts)
+        i = instance(hosts, '~/.ssh/nokey')
 
         i.command('ls', timeout=1, sudo=True)
 
-        mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip])
+        mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], pkey='~/.ssh/nokey')
         self.assertIn(mock.call().run_command('ls', read_timeout=1, sudo=True), mock_ssh.mock_calls)
 
     @mock.patch('spotmanager.instance.ParallelSSHClient')
@@ -28,11 +28,11 @@ class InstanceTestCase(unittest.TestCase):
 
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
-        i = instance(hosts)
+        i = instance(hosts, '~/.ssh/nokey')
 
         i.copy('/foo/myfile')
 
-        mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], timeout=60)
+        mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], timeout=60, pkey='~/.ssh/nokey')
         self.assertIn(mock.call().copy_file('/foo/myfile', 'myfile'), mock_ssh.mock_calls)
 
     @mock.patch('spotmanager.instance.instance.copy')
@@ -41,7 +41,7 @@ class InstanceTestCase(unittest.TestCase):
 
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
-        i = instance(hosts)
+        i = instance(hosts, '~/.ssh/nokey')
 
         i.configure()
 
@@ -55,7 +55,7 @@ class InstanceTestCase(unittest.TestCase):
         
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
-        i = instance(hosts)
+        i = instance(hosts, '~/.ssh/nokey')
 
         m1 = mock.Mock()
         m1.stdout=iter(['12.3'])
@@ -79,7 +79,7 @@ class InstanceTestCase(unittest.TestCase):
         
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
-        i = instance(hosts)
+        i = instance(hosts, '~/.ssh/nokey')
 
         mock_run.return_value.stdout= """
 Name                   OpSys      Arch   State     Activity LoadAv Mem   ActvtyTime
@@ -117,7 +117,7 @@ slot2@batch2.novalocal LINUX      X86_64 Claimed     Retired   1.020 1985  0+04:
 
         hosts = [InstanceTestCase.TestHost('batch','192.168.0.1'),
                  InstanceTestCase.TestHost('batch2', '192.168.0.2')]
-        i = instance(hosts)
+        i = instance(hosts, '~/.ssh/nokey')
 
         mock_condor_status.side_effect=[ [
             {'fullhost':'batch.novalocal', 'host':'batch', 'state':'Claimed', 'activity':'Idle', 'load': '0.000'},
@@ -131,7 +131,7 @@ slot2@batch2.novalocal LINUX      X86_64 Claimed     Retired   1.020 1985  0+04:
 
         i.condor_retire()
 
-        mock_ssh.assert_called_with(['server', 'server'])
+        mock_ssh.assert_called_with(['server', 'server'], pkey='~/.ssh/nokey')
         self.assertIn(mock.call().run_command('%s',
                                               host_args=['condor_off -startd -peaceful batch.novalocal',
                                                          'condor_off -startd -peaceful batch2.novalocal'],
