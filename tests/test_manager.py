@@ -11,7 +11,7 @@ class ManagerTestCase(unittest.TestCase):
     @mock.patch('spotmanager.manager.openstack')
     def test_instantiate(self, mock_os):
 
-        ma = manager('foo/bar.rc')
+        ma = manager('foo/bar.rc', '~/.ssh/nokey')
 
         mock_os.assert_called_with('foo/bar.rc')
         self.assertTrue(hasattr(ma, 'os'))
@@ -20,7 +20,7 @@ class ManagerTestCase(unittest.TestCase):
     @mock.patch('spotmanager.manager.openstack')
     def test_event(self, mock_os, mock_instance):
 
-        ma = manager('for/bar.rc')
+        ma = manager('for/bar.rc', '~/.ssh/nokey')
 
         m1 = mock.Mock() # Should retire
         m1.name = 'test1'
@@ -55,6 +55,6 @@ class ManagerTestCase(unittest.TestCase):
         ma.os.delete.assert_called_with([m2])
         m_instances_retire.condor_retire.assert_called()
 
-        calls = [mock.call([m1, m2, m3]), mock.call([m1]), mock.call([m5])]
+        calls = [mock.call([m1, m2, m3], '~/.ssh/nokey'), mock.call([m1]), mock.call([m5], '~/.ssh/nokey')]
         mock_instance.assert_has_calls(calls)
         m_instances_new.configure.assert_called_once()

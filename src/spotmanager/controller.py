@@ -22,6 +22,8 @@ def main():
                     help="The maximum number of hosts to have at the same time.")
     ap.add_argument("-c", "--configfile", default='ppoc-1-openrc.sh',
                     help="The files that contains the .rc file for access to Nectar.")
+    ap.add_argument("-k", "--keyfile", default='~/.ssh/id_rsa',
+                    help="Private key to use for authentication to instances.")
 
     args = ap.parse_args()
 
@@ -43,7 +45,7 @@ def main():
     
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
-    m = manager(args.configfile)
+    m = manager(args.configfile, args.keyfile)
     m.event(maxhosts=args.number_hosts)
     logger.info('Stopping')
 
