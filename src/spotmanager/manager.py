@@ -37,7 +37,7 @@ class manager():
         self.os.delete(tokill)
         time.sleep(sleepfactor*20)
 
-        retire_instances = instance(toretire)
+        retire_instances = instance(toretire, self.keysfile)
         logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
         retire_instances.condor_retire()
 
