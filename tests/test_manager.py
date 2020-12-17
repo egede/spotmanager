@@ -55,6 +55,7 @@ class ManagerTestCase(unittest.TestCase):
         ma.os.delete.assert_called_with([m2])
         m_instances_retire.condor_retire.assert_called()
 
-        calls = [mock.call([m1, m2, m3], '~/.ssh/nokey'), mock.call([m1]), mock.call([m5], '~/.ssh/nokey')]
+        calls = [mock.call([m1, m2, m3], '~/.ssh/nokey'), mock.call([m1], '~/.ssh/nokey'),
+                 mock.call([m5], '~/.ssh/nokey')]
         mock_instance.assert_has_calls(calls)
         m_instances_new.configure.assert_called_once()
