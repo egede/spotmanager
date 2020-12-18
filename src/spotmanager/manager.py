@@ -41,7 +41,7 @@ class manager():
         logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
         retire_instances.condor_retire()
 
-        n_newhosts = maxhosts - len(hosts)
+        n_newhosts = maxhosts - len(hosts) + len(tokill)
 
         logger.info(f'Will create {max(0, n_newhosts)} new hosts')
         
