@@ -106,8 +106,9 @@ class openstack():
         for s in self.nova.servers.list():
             start = s.created
             uptime = datetime.datetime.now(tz=datetime.timezone.utc)-dateutil.parser.isoparse(start)
-            servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb'][0]))
-        logger.debug(f'Created servers: {[str(s) for s in servers]}')
+            if 'lhcb' in s.networks:
+                servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb'][0]))
+        logger.debug(f'Instances: {[str(s) for s in servers]}')
         return servers
         
 
