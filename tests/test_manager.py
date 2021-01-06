@@ -32,7 +32,7 @@ class ManagerTestCase(unittest.TestCase):
         m3.name = 'test3'
         m3.uptime = datetime.timedelta(minutes=30)
 
-        m5 = mock.Mock() # Should kill (not in status list)
+        m5 = mock.Mock() # Should be ignored (not in status list)
         m5.name = 'test5'
         m5.uptime = datetime.timedelta(minutes=1)
 
@@ -50,12 +50,49 @@ class ManagerTestCase(unittest.TestCase):
         ma.os.instances.side_effect = [[m1, m2, m3], [m3, m5]]
         mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
         
-        ma.event(sleepfactor=0.001)
+        ma.event(sleepfactor=0.001, remove=True)
 
         ma.os.delete.assert_called_with([m2])
         m_instances_retire.condor_retire.assert_called()
 
         calls = [mock.call([m1, m2, m3], '~/.ssh/nokey'), mock.call([m1], '~/.ssh/nokey'),
+                 mock.call([m5], '~/.ssh/nokey')]
+        mock_instance.assert_has_calls(calls)
+        m_instances_new.configure.assert_called_once()
+
+
+    @mock.patch('spotmanager.manager.instance')
+    @mock.patch('spotmanager.manager.openstack')
+    def test_event_nokill(self, mock_os, mock_instance):
+        ma = manager('for/bar.rc', '~/.ssh/nokey')
+
+        m2 = mock.Mock() # Should kill
+        m2.name = 'test2'
+        m2.uptime = datetime.timedelta(hours=23)
+
+        m5 = mock.Mock() # Should be ignored (not in status list)
+        m5.name = 'test5'
+        m5.uptime = datetime.timedelta(minutes=1)
+
+        m_instances = mock.Mock()
+
+        m_instances.condor_status.side_effect=[ [
+            {'host':'test1',  'load': '3.000'},
+            {'host':'test3', 'load': '0.020'},
+        ] ]  
+
+        m_instances_retire = mock.Mock()
+
+        m_instances_new = mock.Mock()
+        
+        ma.os.instances.side_effect = [[m2], [m5]]
+        mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
+        
+        ma.event(sleepfactor=0.001, remove=False)
+
+        ma.os.delete.assert_called_with([])
+        
+        calls = [mock.call([m2], '~/.ssh/nokey'), mock.call([], '~/.ssh/nokey'),
                  mock.call([m5], '~/.ssh/nokey')]
         mock_instance.assert_has_calls(calls)
         m_instances_new.configure.assert_called_once()

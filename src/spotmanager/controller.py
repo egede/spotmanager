@@ -14,6 +14,8 @@ def main():
     ap = argparse.ArgumentParser(description='Manage spot instances on Nectar')
     ap.add_argument("-v", "--verbose", action="count",
                     help="Increase verbosity by enabling DEBUG in the logger.")
+    ap.add_argument("-r", "--remove", action="count",
+                    help="Delete idle instances. Usually this option should be given but as it is dangerous it is not the default.")
     ap.add_argument("-s", "--stdout", action="count",
                     help="Perform logging to stdout instead of a file")
     ap.add_argument("-l", "--logfile", default="spotmanager.log",
@@ -27,6 +29,10 @@ def main():
 
     args = ap.parse_args()
 
+    remove_instances = False
+    if args.remove:
+        remove_instances = True
+    
     if args.verbose:
         logger.setLevel(logging.DEBUG)
     else:
@@ -46,7 +52,7 @@ def main():
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
     m = manager(args.configfile, args.keyfile)
-    m.event(maxhosts=args.number_hosts)
+    m.event(maxhosts=args.number_hosts, remove=remove_instances)
     logger.info('Stopping')
 
 if __name__ == '__main__':

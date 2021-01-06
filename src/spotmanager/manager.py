@@ -17,7 +17,7 @@ class manager():
         self.os = openstack(configfile)
         self.keysfile = keysfile
     
-    def event(self, maxhosts=25, sleepfactor=1):
+    def event(self, maxhosts=25, sleepfactor=1, remove=False):
         hosts = self.os.instances()
         logger.info(f'Running hosts: {[h.name for h in hosts]}')
         instances = instance(hosts, self.keysfile)
@@ -25,13 +25,14 @@ class manager():
         tokill = []
         toretire = []
 
-        for h in hosts:
-            kill = not h.name in [s['host'] for s in status]
-            if kill:
-                tokill.append(h)
-            else:
-                if h.uptime > datetime.timedelta(hours=4):
-                    toretire.append(h)
+        if remove:
+            for h in hosts:
+                kill = not h.name in [s['host'] for s in status]
+                if kill:
+                    tokill.append(h)
+                else:
+                    if h.uptime > datetime.timedelta(hours=4):
+                        toretire.append(h)
 
         logger.info(f'Will kill the hosts: {[h.name for h in tokill]}')
         self.os.delete(tokill)
