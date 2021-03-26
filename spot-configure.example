@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# This script installs the preemtible cloud node. It will have to be adapted.
+#
+
+set -x
+yum -y install squashfuse squashfs-tools yum-cron xorg-x11-server-Xorg xorg-x11-xauth xorg-x11-apps libglvnd-devel glibc-headers glibc-devel python3
+yum groupinstall -y additional-devel
+
+echo user.max_user_namespaces=10000 >> /etc/sysctl.d/98-userns.conf
+timedatectl set-timezone Australia/Melbourne
+
+# Provide the client for global readonly cvmfs file system
+yum -y install https://ecsft.cern.ch/dist/cvmfs/cvmfs-release/cvmfs-release-latest.noarch.rpm
+yum -y install cvmfs
+cat << EOF > /etc/cvmfs/default.local 
+CVMFS_REPOSITORIES='geant4.cern.ch,lhcb-condb.cern.ch,lhcb.cern.ch,sft.cern.ch,unpacked.cern.ch,ganga.cern.ch'
+CVMFS_HTTP_PROXY="http://cvmfs-proxy:3128"
+EOF
+
+systemctl enable autofs
+systemctl start autofs
+cvmfs_config setup
+systemctl restart autofs
+cvmfs_config probe
+
+# Refer to services on the permanent instances by name
+cat << EOF2 >> /etc/hosts
+192.168.1.165	server
+192.168.1.165	cvmfs-proxy
+EOF2
+
+# Install the Condor client
+yum install -y https://research.cs.wisc.edu/htcondor/repo/8.8/el7/release/htcondor-release-8.8-1.el7.noarch.rpm
+yum install -y condor
+
+echo "CONDOR_HOST = server" | tee -a /etc/condor/config.d/49-common
+echo "use ROLE: Execute" | tee -a /etc/condor/config.d/51-role-exec
+mkdir /etc/condor/passwords.d
+chmod 700 /etc/condor/passwords.d
+
+cat << EOF3 > /etc/condor/config.d/50-security
+SEC_PASSWORD_FILE = /etc/condor/passwords.d/POOL
+SEC_DAEMON_AUTHENTICATION = REQUIRED
+SEC_DAEMON_INTEGRITY = REQUIRED
+SEC_DAEMON_AUTHENTICATION_METHODS = PASSWORD
+SEC_NEGOTIATOR_AUTHENTICATION = REQUIRED
+SEC_NEGOTIATOR_INTEGRITY = REQUIRED
+SEC_NEGOTIATOR_AUTHENTICATION_METHODS = PASSWORD
+SEC_CLIENT_AUTHENTICATION_METHODS = FS, PASSWORD, KERBEROS, GSI
+ALLOW_DAEMON = condor_pool@*/*, condor@*/\$(IP_ADDRESS)
+ALLOW_NEGOTIATOR = condor_pool@*/server
+EOF3
+
+cat << EOF4 > /etc/condor/config.d/52-cpu
+NUM_SLOTS_TYPE_1 = 1
+SLOT_TYPE_1 = 100%
+SLOT_TYPE_1_PARTITIONABLE = TRUE
+EOF4
+
+# Setup password for Condor. Has to be the same on server
+condor_store_cred -c -p 'PutYourPasswordHere' add
+
+systemctl enable condor
