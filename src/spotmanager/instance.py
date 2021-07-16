@@ -2,6 +2,7 @@
 import subprocess
 import re
 import logging
+import time
 
 from os.path import basename
 
@@ -39,8 +40,13 @@ class instance():
         """Carry out the configuration of all the instances using a predefined configuration script and finishing
         with a reboot of all the instances (to upgrade the kernel)."""
         logger.info('Configuring hosts')
-        self.copy('spot-configure')
 
+        try:
+            self.command('uptime')
+        except:
+            time.sleep(300)
+
+        self.copy('spot-configure')
         self.command('yum -y update', timeout=600, sudo=True)
         self.command('chmod +x ./spot-configure', timeout=600, sudo=True)
         self.command('./spot-configure', timeout=600, sudo=True)
