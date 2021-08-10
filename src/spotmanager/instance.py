@@ -41,15 +41,18 @@ class instance():
         with a reboot of all the instances (to upgrade the kernel)."""
         logger.info('Configuring hosts')
 
-        try:
-            self.command('uptime')
-        except:
-            time.sleep(300)
+        nwait = 50
+        for i in range(nwait):
+            try:
+                self.command('uptime')
+                break
+            except:
+                logger.info(f'Waiting for servers to go live {i}/{nwait}')
+            time.sleep(30)
 
         self.copy('spot-configure')
-        self.command('yum -y update', timeout=600, sudo=True)
-        self.command('chmod +x ./spot-configure', timeout=600, sudo=True)
-        self.command('./spot-configure', timeout=600, sudo=True)
+        self.command('chmod a+x ./spot-configure', timeout=600)
+        self.command('./spot-configure', timeout=1200, sudo=True)
         self.command('shutdown -r +1', sudo=True)
         logger.info('Rebooting hosts')
         

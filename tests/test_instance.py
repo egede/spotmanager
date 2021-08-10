@@ -46,7 +46,7 @@ class InstanceTestCase(unittest.TestCase):
         i.configure()
 
         mock_copy.assert_called()
-        assert(mock_command.call_count==5)
+        assert(mock_command.call_count==4)
 
 
     @mock.patch('spotmanager.instance.instance.command')
