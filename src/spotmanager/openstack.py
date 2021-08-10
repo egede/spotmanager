@@ -11,6 +11,7 @@ from os.path import join, abspath, expanduser
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from novaclient.client import Client as nova_client
+from novaclient.exceptions import Conflict
 
 logger = logging.getLogger(__name__)
 
@@ -99,8 +100,10 @@ class openstack():
                 return f'server({repr(self.server)}, {self.name}, {self.status}, {repr(self.uptime)}, {self.ip})'
 
             def delete(self):
-                self.server.delete()
-
+                try:
+                    self.server.delete()
+                except Conflict as e:
+                    logger.warning(f'Raised exception <{e}> when deleting the server {self.name}. Will just ignore.')
 
         servers = []
         for s in self.nova.servers.list():
