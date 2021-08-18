@@ -186,6 +186,7 @@ setup(
     entry_points={  # Optional
         'console_scripts': [
             'controller=spotmanager.controller:main',
+            'monitor=spotmanager.monitor:main',
         ],
     },
 
