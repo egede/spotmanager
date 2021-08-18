@@ -68,7 +68,7 @@ def main():
 
     status = [ad['JobStatus'] for ad in
               schedd.query(constraint='true', projection=['JobStatus'])]
-    message = '```'
+    message = '```\n'
     message += 'The following jobs are in processing:\n'
     for k,v in Counter(status).items():
         message += f'{condorstatus[k]:15}, {v:3}\n'
@@ -77,7 +77,7 @@ def main():
     
     now = int(datetime.now().timestamp())
     ndone = 0
-    message = '```'
+    message = '```\n'
     message +=  'Status     Start             Stop              Host\n'
     message += '===================================================\n'
     for ad in schedd.history(constraint=f'JobStartDate > {now}-86400',
