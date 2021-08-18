@@ -80,7 +80,7 @@ def main():
     message = '```\n'
     message +=  'Status     Start             Stop              Host\n'
     message += '===================================================\n'
-    for ad in schedd.history(constraint=f'JobStartDate > {now}-86400',
+    for ad in schedd.history(constraint=f'CompletionDate > {now}-86400',
                              projection=['JobStatus',
                                          'JobStartDate',
                                          'CompletionDate',
@@ -88,11 +88,11 @@ def main():
                              match=-1):
         ndone+=1
         start = datetime.fromtimestamp(ad['JobStartDate']).isoformat(' ')
-        stop = datetime.fromtimestamp(ad['JobStartDate']).isoformat(' ')
-        message+=f'    {ad["JobStatus"]:4}'
-        message+=f'    {start:19}'
-        message+=f'    {stop:19}'
-        message+=f'    {ad["LastRemoteHost"][4:-10]}\n'
+        stop = datetime.fromtimestamp(ad['CompletionDate']).isoformat(' ')
+        message+=f' {ad["JobStatus"]:4}   '
+        message+=f'{start:19} '
+        message+=f'{stop:19} '
+        message+=f'{ad["LastRemoteHost"][4:-10]}\n'
 
     message +='```'
     summary = f'In the last 24h {ndone} jobs finished.'
