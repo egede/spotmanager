@@ -1,6 +1,7 @@
 import unittest
 
 from unittest import mock
+from os.path import join, dirname
 
 from spotmanager.monitor import main
 
@@ -44,7 +45,8 @@ class MonitorTestCase(unittest.TestCase):
         main()
         mock_logging.StreamHandler.assert_called()
 
-        m_parse_args.parse_args.return_value.tokenfile='test_monitor_token'
+        fname = join(dirname(__file__), 'test_monitor_token')
+        m_parse_args.parse_args.return_value.tokenfile=fname
         m_parse_args.parse_args.return_value.channel='def'
 
         m_schedd = mock.Mock()
