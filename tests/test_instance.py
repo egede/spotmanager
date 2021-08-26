@@ -101,7 +101,7 @@ class InstanceTestCase(unittest.TestCase):
         m = mock.Mock()
         m.exception = None
 
-        mock_command.side_effect = [[m], [m] ,[m], [m]]
+        mock_command.side_effect = [[m], [m] ,[m]]
 
 
         i = instance(hosts, '~/.ssh/nokey')
@@ -109,7 +109,7 @@ class InstanceTestCase(unittest.TestCase):
         i.configure()
 
         mock_copy.assert_called()
-        assert(mock_command.call_count==4)
+        assert(mock_command.call_count==3)
 
     @mock.patch('spotmanager.instance.time.sleep')
     @mock.patch('spotmanager.instance.instance.copy')
@@ -125,14 +125,14 @@ class InstanceTestCase(unittest.TestCase):
         m.exception = None
         m1.exception = Exception()
 
-        mock_command.side_effect = [[m1], [m] ,[m], [m], [m]]
+        mock_command.side_effect = [[m1], [m] ,[m], [m]]
 
         i = instance(hosts, '~/.ssh/nokey')
         i.configure()
 
         
         mock_copy.assert_called()
-        assert(mock_command.call_count==5)
+        assert(mock_command.call_count==4)
 
         
     @mock.patch('spotmanager.instance.instance.command')
