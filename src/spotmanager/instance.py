@@ -29,8 +29,9 @@ class instance():
         try:
             client.join(output, timeout=timeout)
             return output
-        except Timeout:
+        except Exception as e:
             logger.error(f'Timeout of {timeout} seconds encountered with command: {command}')
+            logger.error(f'Exception: {e}')
 
     def copy(self, fname):
         """Copy a file to all the instances."""
@@ -47,8 +48,8 @@ class instance():
         nwait = 50
         for i in range(nwait):
             try:
-                self.command('uptime')
-                break
+                ret == self.command('uptime')
+                if (ret != None): break
             except:
                 logger.info(f'Waiting for servers to go live {i}/{nwait}')
             time.sleep(30)
