@@ -26,8 +26,14 @@ class instance():
         logger.debug(f'Executing {command} with sudo {sudo}.')
         client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
         try:
-            output = client.run_command(command, sudo=sudo)
+            output = client.run_command(command, sudo=sudo, stop_on_errors=False)
             client.join(output, timeout=timeout)
+
+            for host_output in output:
+                host = host_output.host
+                if host_output.exception:
+                    logger.error(f'Host {host} has exception: {host_output.exception}')
+
             return output
         except Exception as e:
             logger.error(f'Problem encountered with command: {command}')
