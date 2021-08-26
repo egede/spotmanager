@@ -44,7 +44,7 @@ class instance():
         client = ParallelSSHClient([i.ip for i in self.hosts], timeout=60, pkey=self.keysfile)
         logger.debug(f'Copy file {fname}.')
         cmds = client.copy_file(fname, basename(fname))
-        joinall(cmds, raise_error=True)
+        joinall(cmds, raise_error=False)
         
     def configure(self):
         """Carry out the configuration of all the instances using a predefined configuration script and finishing
