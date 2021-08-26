@@ -23,7 +23,7 @@ class instance():
         
     def command(self, command, timeout=60, sudo=False):
         """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
-        logger.debug(f'Executing {command} with sudo {sudo}.')
+        logger.info(f'Executing {command} with sudo {sudo}.')
         client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
         try:
             output = client.run_command(command, sudo=sudo, stop_on_errors=False)
@@ -44,7 +44,7 @@ class instance():
         client = ParallelSSHClient([i.ip for i in self.hosts], timeout=60, pkey=self.keysfile)
         logger.debug(f'Copy file {fname}.')
         cmds = client.copy_file(fname, basename(fname))
-        joinall(cmds, raise_error=True)
+        joinall(cmds, raise_error=False)
         
     def configure(self):
         """Carry out the configuration of all the instances using a predefined configuration script and finishing
