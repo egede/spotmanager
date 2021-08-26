@@ -69,8 +69,6 @@ class instance():
         self.copy('spot-configure')
         self.command('chmod a+x ./spot-configure', timeout=600)
         self.command('./spot-configure', timeout=1800, sudo=True)
-        logger.info('Rebooting hosts')
-        self.command('shutdown -r +1', sudo=True)
         logger.info('Done')
         
     def loadaverage(self):
