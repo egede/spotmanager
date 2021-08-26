@@ -31,7 +31,7 @@ class instance():
 
             for host_output in output:
                 host = host_output.host
-                if host_output.exception:
+                if host_output.exception != None:
                     logger.error(f'Host {host} has exception: {host_output.exception}')
 
             return output
@@ -55,7 +55,12 @@ class instance():
         for i in range(nwait):
             try:
                 ret = self.command('uptime')
-                if (ret != None): break
+                success = True
+                for host_output in ret:
+                    if host_output.exception != None:
+                        success = False
+                        break
+                if success: break
             except:
                 pass
             logger.info(f'Waiting for servers to go live {i}/{nwait}')

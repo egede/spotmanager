@@ -97,6 +97,13 @@ class InstanceTestCase(unittest.TestCase):
 
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
+
+        m = mock.Mock()
+        m.exception = None
+
+        mock_command.side_effect = [[m], [m] ,[m], [m]]
+
+
         i = instance(hosts, '~/.ssh/nokey')
 
         i.configure()
@@ -104,7 +111,30 @@ class InstanceTestCase(unittest.TestCase):
         mock_copy.assert_called()
         assert(mock_command.call_count==4)
 
+    @mock.patch('spotmanager.instance.time.sleep')
+    @mock.patch('spotmanager.instance.instance.copy')
+    @mock.patch('spotmanager.instance.instance.command')
+    def test_configure_fail(self, mock_command, mock_copy, mock_sleep):
 
+        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
+                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+
+
+        m = mock.Mock()
+        m1 = mock.Mock()
+        m.exception = None
+        m1.exception = Exception()
+
+        mock_command.side_effect = [[m1], [m] ,[m], [m], [m]]
+
+        i = instance(hosts, '~/.ssh/nokey')
+        i.configure()
+
+        
+        mock_copy.assert_called()
+        assert(mock_command.call_count==5)
+
+        
     @mock.patch('spotmanager.instance.instance.command')
     def test_loadaverage(self, mock_command):
 
