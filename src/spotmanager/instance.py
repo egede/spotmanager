@@ -23,7 +23,7 @@ class instance():
         
     def command(self, command, timeout=60, sudo=False):
         """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
-        logger.debug(f'Executing {command} with sudo {sudo}.')
+        logger.info(f'Executing {command} with sudo {sudo}.')
         client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
         try:
             output = client.run_command(command, sudo=sudo, stop_on_errors=False)
