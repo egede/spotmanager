@@ -1,8 +1,11 @@
 import unittest
+import pytest
 
 from unittest import mock
 
 from spotmanager.instance import instance
+
+from pssh.exceptions import Timeout
 
 class InstanceTestCase(unittest.TestCase):
 
@@ -18,10 +21,41 @@ class InstanceTestCase(unittest.TestCase):
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
         i = instance(hosts, '~/.ssh/nokey')
 
-        i.command('ls', timeout=1, sudo=True)
+        m = mock.Mock()
+        m1 = mock.Mock()
+        m2 = mock.Mock()
+        m3 = mock.Mock()
+        mock_ssh.return_value = m
+        m.run_command.side_effect = m1
+        m1.return_value = m3
+        m.join.side_effect = m2
+        ret = i.command('ls', timeout=1, sudo=True)
 
         mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], pkey='~/.ssh/nokey')
-        self.assertIn(mock.call().run_command('ls', read_timeout=1, sudo=True), mock_ssh.mock_calls)
+        m1.assert_called_with('ls', sudo=True)
+        m2.assert_called_with(m3, timeout=1)
+        assert(ret == m3)
+
+        
+    @mock.patch('spotmanager.instance.ParallelSSHClient')
+    def test_command_timeout(self, mock_ssh):
+
+        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
+                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+        i = instance(hosts, '~/.ssh/nokey')
+
+        m = mock.Mock()
+        m1 = mock.Mock()
+        m2 = mock.Mock()
+        m3 = mock.Mock()
+        mock_ssh.return_value = m
+        m.run_command.side_effect = m1
+        m1.return_value = m3
+        m.join.side_effect = Timeout
+        ret = i.command('ls', timeout=1, sudo=True)
+        
+        assert(ret == None)
+
 
     @mock.patch('spotmanager.instance.ParallelSSHClient')
     def test_copy(self, mock_ssh):
