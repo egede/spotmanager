@@ -25,12 +25,12 @@ class instance():
         """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
         logger.debug(f'Executing {command} with sudo {sudo}.')
         client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
-        output = client.run_command(command, sudo=sudo)
         try:
+            output = client.run_command(command, sudo=sudo)
             client.join(output, timeout=timeout)
             return output
         except Exception as e:
-            logger.error(f'Timeout of {timeout} seconds encountered with command: {command}')
+            logger.error(f'Problem encountered with command: {command}')
             logger.error(f'Exception: {e}')
 
     def copy(self, fname):
