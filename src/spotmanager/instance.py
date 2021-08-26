@@ -48,7 +48,7 @@ class instance():
         nwait = 50
         for i in range(nwait):
             try:
-                ret == self.command('uptime')
+                ret = self.command('uptime')
                 if (ret != None): break
             except:
                 logger.info(f'Waiting for servers to go live {i}/{nwait}')
