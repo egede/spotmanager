@@ -25,9 +25,12 @@ class instance():
         """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
         logger.debug(f'Executing {command} with sudo {sudo}.')
         client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
-        output = client.run_command(command, read_timeout=timeout, sudo=sudo)
-        client.join()
-        return output
+        output = client.run_command(command, sudo=sudo)
+        try:
+            client.join(output, timeout=timeout)
+            return output
+        except Timeout:
+            logger.error(f'Timeout of {timeout} seconds encountered with command: {command}')
 
     def copy(self, fname):
         """Copy a file to all the instances."""
@@ -52,10 +55,10 @@ class instance():
 
         self.copy('spot-configure')
         self.command('chmod a+x ./spot-configure', timeout=600)
-        self.command('./spot-configure', timeout=1200, sudo=True)
-        self.command('shutdown -r +1', sudo=True)
+        self.command('./spot-configure', timeout=1800, sudo=True)
         logger.info('Rebooting hosts')
-        
+        self.command('shutdown -r +1', sudo=True)
+        logger.info('Done')
         
     def loadaverage(self):
         """Return a dictionary of the instances with the average load per cpu for each of them"""
