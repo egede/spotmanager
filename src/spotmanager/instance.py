@@ -45,13 +45,14 @@ class instance():
         with a reboot of all the instances (to upgrade the kernel)."""
         logger.info('Configuring hosts')
 
-        nwait = 50
+        nwait = 5
         for i in range(nwait):
             try:
                 ret = self.command('uptime')
                 if (ret != None): break
             except:
-                logger.info(f'Waiting for servers to go live {i}/{nwait}')
+                pass
+            logger.info(f'Waiting for servers to go live {i}/{nwait}')
             time.sleep(30)
 
         self.copy('spot-configure')
