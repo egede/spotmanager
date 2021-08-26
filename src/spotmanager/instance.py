@@ -26,8 +26,14 @@ class instance():
         logger.debug(f'Executing {command} with sudo {sudo}.')
         client = ParallelSSHClient([i.ip for i in self.hosts], pkey=self.keysfile)
         try:
-            output = client.run_command(command, sudo=sudo)
+            output = client.run_command(command, sudo=sudo, stop_on_errors=False)
             client.join(output, timeout=timeout)
+
+            for host_output in output:
+                host = host_output.host
+                if host_output.exception != None:
+                    logger.error(f'Host {host} has exception: {host_output.exception}')
+
             return output
         except Exception as e:
             logger.error(f'Problem encountered with command: {command}')
@@ -45,13 +51,19 @@ class instance():
         with a reboot of all the instances (to upgrade the kernel)."""
         logger.info('Configuring hosts')
 
-        nwait = 50
+        nwait = 5
         for i in range(nwait):
             try:
                 ret = self.command('uptime')
-                if (ret != None): break
+                success = True
+                for host_output in ret:
+                    if host_output.exception != None:
+                        success = False
+                        break
+                if success: break
             except:
-                logger.info(f'Waiting for servers to go live {i}/{nwait}')
+                pass
+            logger.info(f'Waiting for servers to go live {i}/{nwait}')
             time.sleep(30)
 
         self.copy('spot-configure')

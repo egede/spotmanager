@@ -27,14 +27,35 @@ class InstanceTestCase(unittest.TestCase):
         m3 = mock.Mock()
         mock_ssh.return_value = m
         m.run_command.side_effect = m1
-        m1.return_value = m3
+        m1.return_value = [m3]
         m.join.side_effect = m2
         ret = i.command('ls', timeout=1, sudo=True)
 
         mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], pkey='~/.ssh/nokey')
-        m1.assert_called_with('ls', sudo=True)
-        m2.assert_called_with(m3, timeout=1)
-        assert(ret == m3)
+        m1.assert_called_with('ls', sudo=True, stop_on_errors=False)
+        m2.assert_called_with([m3], timeout=1)
+        assert(ret == [m3])
+
+    @mock.patch('spotmanager.instance.ParallelSSHClient')
+    def test_command_fail(self, mock_ssh):
+
+        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
+                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+        i = instance(hosts, '~/.ssh/nokey')
+
+        m = mock.Mock()
+        m1 = mock.Mock()
+        m2 = mock.Mock()
+        m3 = mock.Mock()
+        m3.exception.return_value=Exception()
+        mock_ssh.return_value = m
+        m.run_command.side_effect = m1
+        m1.return_value = [m3]
+        m.join.side_effect = m2
+        ret = i.command('ls', timeout=1, sudo=True)
+
+        m2.assert_called_with([m3], timeout=1)
+        assert(ret == [m3])
 
         
     @mock.patch('spotmanager.instance.ParallelSSHClient')
@@ -66,7 +87,8 @@ class InstanceTestCase(unittest.TestCase):
 
         i.copy('/foo/myfile')
 
-        mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip], timeout=60, pkey='~/.ssh/nokey')
+        mock_ssh.assert_called_with([hosts[0].ip, hosts[1].ip],
+                                    timeout=60, pkey='~/.ssh/nokey')
         self.assertIn(mock.call().copy_file('/foo/myfile', 'myfile'), mock_ssh.mock_calls)
 
     @mock.patch('spotmanager.instance.instance.copy')
@@ -75,6 +97,13 @@ class InstanceTestCase(unittest.TestCase):
 
         hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
                  InstanceTestCase.TestHost('test2', '192.168.0.2')]
+
+        m = mock.Mock()
+        m.exception = None
+
+        mock_command.side_effect = [[m], [m] ,[m], [m]]
+
+
         i = instance(hosts, '~/.ssh/nokey')
 
         i.configure()
@@ -82,7 +111,30 @@ class InstanceTestCase(unittest.TestCase):
         mock_copy.assert_called()
         assert(mock_command.call_count==4)
 
+    @mock.patch('spotmanager.instance.time.sleep')
+    @mock.patch('spotmanager.instance.instance.copy')
+    @mock.patch('spotmanager.instance.instance.command')
+    def test_configure_fail(self, mock_command, mock_copy, mock_sleep):
 
+        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
+                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+
+
+        m = mock.Mock()
+        m1 = mock.Mock()
+        m.exception = None
+        m1.exception = Exception()
+
+        mock_command.side_effect = [[m1], [m] ,[m], [m], [m]]
+
+        i = instance(hosts, '~/.ssh/nokey')
+        i.configure()
+
+        
+        mock_copy.assert_called()
+        assert(mock_command.call_count==5)
+
+        
     @mock.patch('spotmanager.instance.instance.command')
     def test_loadaverage(self, mock_command):
 
