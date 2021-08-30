@@ -2,6 +2,7 @@
 import logging
 import argparse
 import socket
+import subprocess
 
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
@@ -63,7 +64,9 @@ def main():
 
     host = socket.gethostname()
     ip = socket.gethostbyname(host)
-    message = f'The machine {host} with IP {ip} is shutting down'
+    ret = subprocess.run('uptime', capture_output=True)
+    uptime = ret.stdout.decode('utf-8')[10:]
+    message = f'The machine {host} with IP {ip} is shutting down: {uptime}.'
 
     logger.info(message)
     
