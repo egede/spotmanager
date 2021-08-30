@@ -64,7 +64,7 @@ def main():
 
     host = socket.gethostname()
     ip = socket.gethostbyname(host)
-    ret = subprocess.run('uptime', capture_output=True)
+    ret = subprocess.run('uptime', stdout=subprocess.PIPE)
     uptime = ret.stdout.decode('utf-8')[10:]
     message = f'The machine {host} with IP {ip} is shutting down: {uptime}.'
 
