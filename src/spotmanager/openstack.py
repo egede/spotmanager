@@ -50,6 +50,7 @@ class openstack():
         instance = self.nova.servers.create(name,
                                             image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
                                             flavor=self.nova.flavors.find(name='m3.medium'),
+                                            availability_zone='tasmania-02',
                                             nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
                                             key_name='rsa',
                                             security_group='default',
