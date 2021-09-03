@@ -17,7 +17,7 @@ class manager():
         self.os = openstack(configfile)
         self.keysfile = keysfile
     
-    def event(self, maxhosts=25, sleepfactor=1, remove=False):
+    def event(self, maxhosts=25, sleepfactor=1, remove=False, zone='', throttle=-1):
         hosts = self.os.instances()
         logger.info(f'Running hosts: {[h.name for h in hosts]}')
         instances = instance(hosts, self.keysfile)
@@ -43,12 +43,14 @@ class manager():
         retire_instances.condor_retire()
 
         n_newhosts = maxhosts - len(hosts) + len(tokill)
-
+        if throttle>=0:
+            n_newhosts = max(n_newhosts, throttle)
+        
         logger.info(f'Will create {max(0, n_newhosts)} new hosts')
         
         if n_newhosts > 0:
             name = 'spot-'+str(uuid.uuid4())
-            self.os.create(name=name, max=n_newhosts)
+            self.os.create(name=name, max=n_newhosts, zone=zone)
             time.sleep(sleepfactor*120)
 
             allhosts = self.os.instances()
