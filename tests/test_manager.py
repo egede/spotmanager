@@ -96,3 +96,48 @@ class ManagerTestCase(unittest.TestCase):
                  mock.call([m5], '~/.ssh/nokey')]
         mock_instance.assert_has_calls(calls)
         m_instances_new.configure.assert_called_once()
+
+
+    @mock.patch('spotmanager.manager.instance')
+    @mock.patch('spotmanager.manager.openstack')
+    def test_throttle(self, mock_os, mock_instance):
+
+        ma = manager('for/bar.rc', '~/.ssh/nokey')
+
+        m_instances = mock.Mock()
+        m_instances_retire = mock.Mock()
+
+        m_instances.condor_status.side_effect=[ [ ] ]  
+
+        m_instances_new = mock.Mock()
+        
+        mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
+        
+        m1 = mock.Mock()
+        ma.os.create=m1
+
+        ma.event(sleepfactor=0.001, throttle=1)
+
+        m1.assert_called_with(max=1, zone=mock.ANY, name=mock.ANY)
+
+    @mock.patch('spotmanager.manager.instance')
+    @mock.patch('spotmanager.manager.openstack')
+    def test_no_throttle(self, mock_os, mock_instance):
+
+        ma = manager('for/bar.rc', '~/.ssh/nokey')
+
+        m_instances = mock.Mock()
+        m_instances_retire = mock.Mock()
+
+        m_instances.condor_status.side_effect=[ [ ] ]  
+
+        m_instances_new = mock.Mock()
+        
+        mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
+        
+        m1 = mock.Mock()
+        ma.os.create=m1
+
+        ma.event(sleepfactor=0.001)
+
+        m1.assert_called_with(max=25, zone=mock.ANY, name=mock.ANY)
