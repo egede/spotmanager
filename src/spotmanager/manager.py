@@ -44,7 +44,7 @@ class manager():
 
         n_newhosts = maxhosts - len(hosts) + len(tokill)
         if throttle>=0:
-            n_newhosts = max(n_newhosts, throttle)
+            n_newhosts = min(n_newhosts, throttle)
         
         logger.info(f'Will create {max(0, n_newhosts)} new hosts')
         
