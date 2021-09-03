@@ -2,6 +2,10 @@
 import logging
 import argparse
 import socket
+import fcntl
+import struct
+import os
+
 import subprocess
 
 from logging.handlers import RotatingFileHandler
@@ -9,13 +13,15 @@ from datetime import datetime
 
 from spotmanager.slackhandler import SlackChannelHandler
 
-condorstatus = {1: 'Idle',
-                2: 'Running',
-                3: 'Removing',
-                4: 'Completed',
-                5: 'Held',
-                6: 'Transferring Output',
-                7: 'Suspended'}
+
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ip = socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24])
+    return ip
 
 def main():
 
@@ -56,17 +62,19 @@ def main():
             tk = f.readline().strip()
 
         sh = SlackChannelHandler(tk, args.channel)
-        sf = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        sf = logging.Formatter('%(name)s - %(message)s')
         sh.setFormatter(sf)
         logger.addHandler(sh)
     
     logger.debug('Starting')
 
     host = socket.gethostname()
-    ip = socket.gethostbyname(host)
+    host = host.split('.')[0]
+    network = bytes(os.listdir('/sys/class/net/')[0], 'utf-8')
+    ip = get_ip_address(network)
     ret = subprocess.run('uptime', stdout=subprocess.PIPE)
     uptime = ret.stdout.decode('utf-8')[10:]
-    message = f'The machine {host} with IP {ip} is shutting down: {uptime}.'
+    message = f'{host}:{ip} shutting down: {uptime}.'
 
     logger.info(message)
     

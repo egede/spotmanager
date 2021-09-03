@@ -46,16 +46,26 @@ class openstack():
         self.nova = nova_client('2.1',session=self.session)
         logger.info(f"Project is: user: {env['OS_USERNAME']}, project: {env['OS_PROJECT_ID']}, domain: {env['OS_USER_DOMAIN_NAME']}")
 
-    def create(self, name='test', min=1, max=1):
-        instance = self.nova.servers.create(name,
-                                            image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
-                                            flavor=self.nova.flavors.find(name='m3.medium'),
-                                            availability_zone='tasmania-02',
-                                            nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
-                                            key_name='rsa',
-                                            security_group='default',
-                                            min_count=min,
-                                            max_count=max)
+    def create(self, name='test', min=1, max=1, zone=""):
+        if len(zone)>0:
+            instance = self.nova.servers.create(name,
+                                                image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
+                                                flavor=self.nova.flavors.find(name='m3.medium'),
+                                                availability_zone=zone,
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
+                                                key_name='rsa',
+                                                security_group='default',
+                                                min_count=min,
+                                                max_count=max)
+        else:
+            instance = self.nova.servers.create(name,
+                                                image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
+                                                flavor=self.nova.flavors.find(name='m3.medium'),
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
+                                                key_name='rsa',
+                                                security_group='default',
+                                                min_count=min,
+                                                max_count=max)
         return instance
 
     def delete(self, servers):

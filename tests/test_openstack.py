@@ -49,6 +49,7 @@ class OpenstackTestCase(unittest.TestCase):
 
     def test_create(self):
         instance = self.os.create()
+        instance = self.os.create(zone='foo')
         
     def test_instances(self):
         instances = self.os.instances()
