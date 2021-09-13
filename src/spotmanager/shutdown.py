@@ -5,6 +5,7 @@ import socket
 import fcntl
 import struct
 import os
+import re
 
 import subprocess
 
@@ -74,7 +75,7 @@ def main():
     ip = get_ip_address(network)
     ret = subprocess.run('uptime', stdout=subprocess.PIPE)
     uptime = ret.stdout.decode('utf-8')[10:]
-    short = re.search(r'^up\s+([0-9])\s+min', s) # Will match 9 minutes or less
+    short = re.search(r'^up\s+([0-9])\s+min', uptime) # Will match 9 minutes or less
     if not short:
         message = f'{host}:{ip} shutting down: {uptime}.'
 
