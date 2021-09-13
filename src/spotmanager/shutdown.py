@@ -74,9 +74,11 @@ def main():
     ip = get_ip_address(network)
     ret = subprocess.run('uptime', stdout=subprocess.PIPE)
     uptime = ret.stdout.decode('utf-8')[10:]
-    message = f'{host}:{ip} shutting down: {uptime}.'
+    short = re.search(r'^up\s+([0-9])\s+min', s) # Will match 9 minutes or less
+    if not short:
+        message = f'{host}:{ip} shutting down: {uptime}.'
 
-    logger.info(message)
+        logger.info(message)
     
     logger.debug('Stopping')
 
