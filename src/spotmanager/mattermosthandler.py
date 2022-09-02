@@ -18,7 +18,7 @@ class MattermostChannelHandler(logging.Handler):
 
     def emit(self, record):
         headers = {'Content-Type': 'application/json',}
-        values = f'{{ "text": "{record}"}}'
+        values = f'{{ "text": "{self.format(record)}"}}'
         
         try:
             response = requests.post(self.url, headers=headers, data=values) 
