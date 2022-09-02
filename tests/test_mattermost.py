@@ -16,8 +16,6 @@ class mattermostTestCase(unittest.TestCase):
         mock_requests.return_value=m
 
         mm = MattermostChannelHandler(url)
-        mm.format = mock.Mock()
-        mm.format.return_value='formatted text'
         
         assert(mm.url == url)
 
