@@ -1,4 +1,5 @@
 import unittest
+import requests
 
 from unittest import mock
 from requests.exceptions import RequestException
