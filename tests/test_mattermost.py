@@ -1,5 +1,6 @@
 import unittest
 import requests
+import logging
 
 from unittest import mock
 from requests.exceptions import RequestException
@@ -18,10 +19,12 @@ class mattermostTestCase(unittest.TestCase):
         
         assert(mm.url == url)
 
-        mm.emit('abc')
+        record = logging.makeLogRecord(dict(msg='abc'))
+
+        mm.emit(record)
         mock_post.assert_called_with('testurl', 
                                   headers={'Content-Type': 'application/json',},
                                   data='{ "text": "abc"}')
         
         mock_post.side_effect = RequestException()
-        mm.emit('abc')
+        mm.emit(record)
