@@ -12,7 +12,7 @@ class ShutdownTestCase(unittest.TestCase):
     @mock.patch('spotmanager.shutdown.logging')
     @mock.patch('spotmanager.shutdown.RotatingFileHandler')
     @mock.patch('spotmanager.shutdown.SlackChannelHandler')
-    @mock.patch('spotmanager.monitor.MattermostChannelHandler')
+    @mock.patch('spotmanager.shutdown.MattermostChannelHandler')
 
     def test_main(self, mock_MCH, mock_SCH,
                   mock_RFH, mock_logging, mock_argparse):

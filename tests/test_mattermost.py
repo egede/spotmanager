@@ -8,7 +8,7 @@ from spotmanager.mattermosthandler import MattermostChannelHandler
 
 class mattermostTestCase(unittest.TestCase):
 
-    @mock.patch('spotmanager.mattermosthandler.requests')
+    @mock.patch('requests')
     def test_main(self, mock_requests):
 
         url = 'testurl'
