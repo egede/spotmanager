@@ -9,23 +9,19 @@ from spotmanager.mattermosthandler import MattermostChannelHandler
 
 class mattermostTestCase(unittest.TestCase):
 
-    @mock.patch('requests')
-    def test_main(self, mock_requests):
+    @mock.patch('requests.post')
+    def test_main(self, mock_post):
 
         url = 'testurl'
-        m = mock.Mock()
-        mock_requests.return_value=m
 
         mm = MattermostChannelHandler(url)
         
         assert(mm.url == url)
 
         mm.emit('abc')
-        m.post.assert_called_with(url='testurl', 
+        mock_post.assert_called_with('testurl', 
                                   headers={'Content-Type': 'application/json',},
                                   data='{ "text": "abc"}')
         
-        m2 = mock.Mock()
-        m.post = m2
-        m2.side_effect = RequestException()
-        m.emit('abc')
+        mock_post.side_effect = RequestException()
+        mm.emit('abc')
