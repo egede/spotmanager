@@ -32,6 +32,7 @@ class MonitorTestCase(unittest.TestCase):
         mock_argparse.ArgumentParser.return_value = m_parse_args
         m_parse_args.parse_args.return_value.stdout= None
         m_parse_args.parse_args.return_value.tokenfile=''
+        m_parse_args.parse_args.return_value.urlfile=''
         
         main()
 
