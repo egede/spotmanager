@@ -8,6 +8,7 @@ from datetime import datetime
 
 import htcondor
 from spotmanager.slackhandler import SlackChannelHandler
+from spotmanager.mattermosthandler import MattermostChannelHandler
 
 condorstatus = {1: 'Idle',
                 2: 'Running',
@@ -33,6 +34,8 @@ def main():
                     help="The file that contains the authentication for slack. If not given, there will be no logging to Slack")
     ap.add_argument("-c", "--channel", default='C02BATY8P4M',
                     help="The Slack channel")
+    ap.add_argument("-u", "--urlfile", default='',
+                    help="The file that contains the URL for Mattermost. If not given, there will be no logging to Mattermost")
 
     args = ap.parse_args()
 
@@ -59,7 +62,16 @@ def main():
         sf = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
         sh.setFormatter(sf)
         logger.addHandler(sh)
-    
+
+    if len(args.urlfile)>0:
+        with open(args.urlfile) as f:
+            url = f.readline().strip()
+
+        mh = MattermostChannelHandler(url)
+        mf = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        mh.setFormatter(mf)
+        logger.addHandler(mh)
+
     logger.debug('Verbose mode is enabled.')
     logger.debug('Starting')
 

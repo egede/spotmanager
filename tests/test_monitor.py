@@ -12,8 +12,9 @@ class MonitorTestCase(unittest.TestCase):
     @mock.patch('spotmanager.monitor.logging')
     @mock.patch('spotmanager.monitor.RotatingFileHandler')
     @mock.patch('spotmanager.monitor.SlackChannelHandler')
+    @mock.patch('spotmanager.monitor.MattermostChannelHandler')
     @mock.patch('spotmanager.monitor.htcondor')
-    def test_main(self, mock_condor, mock_SCH,
+    def test_main(self, mock_condor, mock_MCH, mock_SCH,
                   mock_RFH, mock_logging, mock_argparse):
 
         m_DEBUG = mock.Mock()
@@ -31,6 +32,7 @@ class MonitorTestCase(unittest.TestCase):
         mock_argparse.ArgumentParser.return_value = m_parse_args
         m_parse_args.parse_args.return_value.stdout= None
         m_parse_args.parse_args.return_value.tokenfile=''
+        m_parse_args.parse_args.return_value.urlfile=''
         
         main()
 
@@ -49,6 +51,9 @@ class MonitorTestCase(unittest.TestCase):
         m_parse_args.parse_args.return_value.tokenfile=fname
         m_parse_args.parse_args.return_value.channel='def'
 
+        fname = join(dirname(__file__), 'test_mattermost_url')
+        m_parse_args.parse_args.return_value.urlfile=fname
+
         m_schedd = mock.Mock()
         mock_condor.Schedd.return_value = m_schedd
         m_schedd.query.return_value = [ {'JobStatus':1} ]
@@ -60,6 +65,7 @@ class MonitorTestCase(unittest.TestCase):
 
         main()
         mock_SCH.assert_called_with('ABC', 'def')
+        mock_MCH.assert_called_with('https://test.me')
 
 
         m_schedd.query.assert_called()

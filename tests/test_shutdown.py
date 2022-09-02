@@ -12,7 +12,9 @@ class ShutdownTestCase(unittest.TestCase):
     @mock.patch('spotmanager.shutdown.logging')
     @mock.patch('spotmanager.shutdown.RotatingFileHandler')
     @mock.patch('spotmanager.shutdown.SlackChannelHandler')
-    def test_main(self, mock_SCH,
+    @mock.patch('spotmanager.shutdown.MattermostChannelHandler')
+
+    def test_main(self, mock_MCH, mock_SCH,
                   mock_RFH, mock_logging, mock_argparse):
 
         m_DEBUG = mock.Mock()
@@ -30,7 +32,8 @@ class ShutdownTestCase(unittest.TestCase):
         mock_argparse.ArgumentParser.return_value = m_parse_args
         m_parse_args.parse_args.return_value.stdout= None
         m_parse_args.parse_args.return_value.tokenfile=''
-        
+        m_parse_args.parse_args.return_value.urlfile=''
+
         main()
 
         mock_RFH.assert_called()
@@ -48,5 +51,9 @@ class ShutdownTestCase(unittest.TestCase):
         m_parse_args.parse_args.return_value.tokenfile=fname
         m_parse_args.parse_args.return_value.channel='def'
 
+        fname = join(dirname(__file__), 'test_mattermost_url')
+        m_parse_args.parse_args.return_value.urlfile=fname
+
         main()
         mock_SCH.assert_called_with('ABC', 'def')
+        mock_MCH.assert_called_with('https://test.me')
