@@ -14,7 +14,7 @@ def main():
     ap = argparse.ArgumentParser(description='Manage spot instances on Nectar')
     ap.add_argument("-v", "--verbose", action="count",
                     help="Increase verbosity by enabling DEBUG in the logger.")
-    ap.add_argument("-c", "--configfile", default='ppoc-1-openrc.sh',
+    ap.add_argument("-c", "--configfile", default='lhcb-simulation-openrc.sh',
                     help="The files that contains the .rc file for access to Nectar.")
     ap.add_argument("-k", "--keyfile", default='~/.ssh/id_rsa',
                     help="Private key to use for authentication to instances.")
@@ -23,10 +23,10 @@ def main():
     ap.add_argument("-n", "--number-hosts", type=int, default=25,
                     help="The maximum number of instances to have at the same time.")
     ap.add_argument("-r", "--remove", action="count",
-                    help="Delete idle instances. Usually this option should be given but as it is dangerous it is not the default.")
+                    help="Delete idle preemtible instances. Usually this option should be given but as it is dangerous it is not the default.")
     ap.add_argument("-s", "--stdout", action="count",
                     help="Perform logging to stdout instead of a file")
-    ap.add_argument("-t", "--throttle", type=int, default=-1,
+    ap.add_argument("-t", "--throttle", type=int, default=4,
                     help="The maximum new instances to start at a given time. If negative, no limit.")
     ap.add_argument("-z", "--zone", default='',
                     help="Zone to start instances in.")
