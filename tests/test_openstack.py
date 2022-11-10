@@ -54,7 +54,7 @@ class OpenstackTestCase(unittest.TestCase):
     def test_instances(self):
         instances = self.os.instances()
         assert(len(instances) == 2)
-        assert(instances[0].name=='test')
+        assert(instances[0].name=='spot-test')
         assert(instances[0].status=='TEST')
         assert(instances[0].ip=='192.168.0.1')
 
