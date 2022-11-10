@@ -46,11 +46,11 @@ class openstack():
         self.nova = nova_client('2.1',session=self.session)
         logger.info(f"Project is: user: {env['OS_USERNAME']}, project: {env['OS_PROJECT_ID']}, domain: {env['OS_USER_DOMAIN_NAME']}")
 
-    def create(self, name='test', min=1, max=1, zone=""):
+    def create(self, name='spot-test', min=1, max=1, zone=""):
         if len(zone)>0:
             instance = self.nova.servers.create(name,
                                                 image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
-                                                flavor=self.nova.flavors.find(name='m3.medium'),
+                                                flavor=self.nova.flavors.find(name='p3.medium'),
                                                 availability_zone=zone,
                                                 nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
                                                 key_name='rsa',
@@ -60,7 +60,7 @@ class openstack():
         else:
             instance = self.nova.servers.create(name,
                                                 image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
-                                                flavor=self.nova.flavors.find(name='m3.medium'),
+                                                flavor=self.nova.flavors.find(name='p3.medium'),
                                                 nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
                                                 key_name='rsa',
                                                 security_group='default',
@@ -120,9 +120,7 @@ class openstack():
         for s in self.nova.servers.list():
             start = s.created
             uptime = datetime.datetime.now(tz=datetime.timezone.utc)-dateutil.parser.isoparse(start)
-            if 'lhcb' in s.networks:
+            if s.name[:5]=='spot-' and 'lhcb' in s.networks:
                 servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb'][0]))
         logger.debug(f'Instances: {[str(s) for s in servers]}')
         return servers
-        
-
