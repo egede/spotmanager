@@ -43,6 +43,14 @@ class ManagerTestCase(unittest.TestCase):
             {'fullhost':'test3.novalocal', 'host':'test3', 'state':'Unclaimed', 'activity':'Idle', 'load': '0.020'},
         ] ]  
 
+        m_instances.condor_queue.side_effect=[{'jobs': 51, 
+            'completed': 2,
+            'removed': 37,
+            'idle': 19,
+            'running': 39,
+            'held': 12,
+            'suspended': 1}]
+
         m_instances_retire = mock.Mock()
 
         m_instances_new = mock.Mock()
@@ -81,6 +89,14 @@ class ManagerTestCase(unittest.TestCase):
             {'host':'test3', 'load': '0.020'},
         ] ]  
 
+        m_instances.condor_queue.side_effect=[{'jobs': 51, 
+            'completed': 2,
+            'removed': 37,
+            'idle': 19,
+            'running': 39,
+            'held': 12,
+            'suspended': 1}]
+
         m_instances_retire = mock.Mock()
 
         m_instances_new = mock.Mock()
@@ -110,7 +126,15 @@ class ManagerTestCase(unittest.TestCase):
         m_instances.condor_status.side_effect=[ [ ] ]  
 
         m_instances_new = mock.Mock()
-        
+
+        m_instances.condor_queue.side_effect=[{'jobs': 51, 
+            'completed': 2,
+            'removed': 37,
+            'idle': 19,
+            'running': 39,
+            'held': 12,
+            'suspended': 1}]
+
         mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
         
         m1 = mock.Mock()
@@ -132,7 +156,15 @@ class ManagerTestCase(unittest.TestCase):
         m_instances.condor_status.side_effect=[ [ ] ]  
 
         m_instances_new = mock.Mock()
-        
+
+        m_instances.condor_queue.side_effect=[{'jobs': 51, 
+            'completed': 2,
+            'removed': 37,
+            'idle': 30,
+            'running': 39,
+            'held': 12,
+            'suspended': 1}]
+
         mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
         
         m1 = mock.Mock()
@@ -141,3 +173,34 @@ class ManagerTestCase(unittest.TestCase):
         ma.event(sleepfactor=0.001)
 
         m1.assert_called_with(max=25, zone=mock.ANY, name=mock.ANY)
+
+
+    @mock.patch('spotmanager.manager.instance')
+    @mock.patch('spotmanager.manager.openstack')
+    def test_few_idle(self, mock_os, mock_instance):
+
+        ma = manager('for/bar.rc', '~/.ssh/nokey')
+
+        m_instances = mock.Mock()
+        m_instances_retire = mock.Mock()
+
+        m_instances.condor_status.side_effect=[ [ ] ]  
+
+        m_instances_new = mock.Mock()
+
+        m_instances.condor_queue.side_effect=[{'jobs': 51, 
+            'completed': 2,
+            'removed': 37,
+            'idle': 10,
+            'running': 39,
+            'held': 12,
+            'suspended': 1}]
+
+        mock_instance.side_effect = [ m_instances, m_instances_retire, m_instances_new ]
+        
+        m1 = mock.Mock()
+        ma.os.create=m1
+
+        ma.event(sleepfactor=0.001)
+
+        m1.assert_called_with(max=10, zone=mock.ANY, name=mock.ANY)
