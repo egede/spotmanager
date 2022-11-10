@@ -112,3 +112,19 @@ class instance():
         client = ParallelSSHClient(server, pkey=self.keysfile)
 
         output = client.run_command('%s', host_args=commandlist, sudo=True) 
+
+
+    def condor_queue(self):
+        """Report on the job queue in Condor"""
+        output = subprocess.run('condor_q', stdout=subprocess.PIPE, encoding='utf-8').stdout
+        for line in output.split('\n'):
+            match = re.match(
+                r'^Total for all users: (?P<jobs>[\.0-9]+) jobs;'+
+                r' (?P<completed>[\.0-9]+) completed,'+
+                r' (?P<removed>[\.0-9]+) removed,'+
+                r' (?P<idle>[\.0-9]+) idle,'+
+                r' (?P<running>[\.0-9]+) running,'+
+                r' (?P<held>[\.0-9]+) held,'+
+                r' (?P<suspended>[\.0-9]+) suspended', line)
+            if match:
+                return dict([(k, int(v)) for k, v in match.groupdict().items()])

@@ -223,3 +223,30 @@ slot2@batch2.novalocal LINUX      X86_64 Claimed     Retired   1.020 1985  0+04:
                                                          'condor_off -startd -peaceful batch2.novalocal'],
                                               sudo=True),
                       mock_ssh.mock_calls)
+
+    @mock.patch('spotmanager.instance.subprocess.run')
+    def test_condor_queue(self, mock_run):
+
+        hosts = [InstanceTestCase.TestHost('test1','192.168.0.1'),
+                 InstanceTestCase.TestHost('test2', '192.168.0.2')]
+        i = instance(hosts, '~/.ssh/nokey')
+
+        mock_run.return_value.stdout= """
+
+
+
+-- Schedd: frontend.novalocal : <192.168.3.89:9618?... @ 11/10/22 16:42:12
+OWNER BATCH_NAME      SUBMITTED   DONE   RUN    IDLE   HOLD  TOTAL JOB_IDS
+
+Total for query: 0 jobs; 0 completed, 0 removed, 0 idle, 0 running, 0 held, 0 suspended 
+Total for ec2-user: 0 jobs; 0 completed, 0 removed, 0 idle, 0 running, 0 held, 0 suspended 
+Total for all users: 51 jobs; 2 completed, 37 removed, 19 idle, 39 running, 12 held, 1 suspended
+"""
+        jobdict = i.condor_queue()
+        assert(jobdict == {'jobs': 51, 
+            'completed': 2,
+            'removed': 37,
+            'idle': 19,
+            'running': 39,
+            'held': 12,
+            'suspended': 1})
