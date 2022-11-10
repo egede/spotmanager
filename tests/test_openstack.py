@@ -36,7 +36,7 @@ class OpenstackTestCase(unittest.TestCase):
             def __init__(self):
                 self.networks = {'lhcb':['192.168.0.1']}
                 self.status='TEST'
-                self.name='test'
+                self.name='spot-test'
                 self.created = '2020-12-08T04:31:54Z'
 
             def delete(self):
@@ -60,7 +60,6 @@ class OpenstackTestCase(unittest.TestCase):
 
     def test_delete(self):
         instances = self.os.instances()
-        print(instances)
         self.os.delete(instances)
         self.os.delete([instances[0]])
         self.os.delete([instances[0].server])
@@ -95,7 +94,7 @@ class OpenstackFailTestCase(unittest.TestCase):
             def __init__(self):
                 self.networks = {'lhcb':['192.168.0.1']}
                 self.status='TEST'
-                self.name='test'
+                self.name='spot-test'
                 self.created = '2020-12-08T04:31:54Z'
 
             def delete(self):
@@ -111,4 +110,4 @@ class OpenstackFailTestCase(unittest.TestCase):
 
         instances = self.os.instances()
         self.os.delete([instances[0]])
-        mock_warning.assert_called_with('Raised exception <Conflict (HTTP 404)> when deleting the server test. Will just ignore.')
+        mock_warning.assert_called_with('Raised exception <Conflict (HTTP 404)> when deleting the server spot-test. Will just ignore.')
