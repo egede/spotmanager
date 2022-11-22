@@ -30,6 +30,8 @@ def main():
                     help="The maximum new instances to start at a given time. If negative, no limit.")
     ap.add_argument("-z", "--zone", default='',
                     help="Zone to start instances in.")
+    ap.add_argument("-S", "--sleepfactor", type=int, default=1,
+                    help="How long to wait for actions to take place.")
 
     args = ap.parse_args()
 
@@ -56,7 +58,7 @@ def main():
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
     m = manager(args.configfile, args.keyfile)
-    m.event(maxhosts=args.number_hosts, remove=remove_instances, throttle=args.throttle, zone=args.zone)
+    m.event(maxhosts=args.number_hosts, sleepfactor=args.sleepfactor, remove=remove_instances, throttle=args.throttle, zone=args.zone)
     logger.info('Stopping')
 
 if __name__ == '__main__':
