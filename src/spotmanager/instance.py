@@ -6,7 +6,7 @@ import time
 
 from os.path import basename
 
-from pssh.clients import ParallelSSHClient
+from pssh.clients import ParallelSSHClient, SSHClient
 from pssh.exceptions import Timeout
 from gevent import joinall
 
