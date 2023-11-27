@@ -49,19 +49,19 @@ class openstack():
     def create(self, name='spot-test', min=1, max=1, zone=""):
         if len(zone)>0:
             instance = self.nova.servers.create(name,
-                                                image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
+                                                image=self.nova.glance.find_image('base-batch'),
                                                 flavor=self.nova.flavors.find(name='p3.medium'),
                                                 availability_zone=zone,
-                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb2').id}],
                                                 key_name='rsa',
                                                 security_group='default',
                                                 min_count=min,
                                                 max_count=max)
         else:
             instance = self.nova.servers.create(name,
-                                                image=self.nova.glance.find_image('NeCTAR CentOS 7 x86_64'),
+                                                image=self.nova.glance.find_image('base-batch'),
                                                 flavor=self.nova.flavors.find(name='p3.medium'),
-                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb2').id}],
                                                 key_name='rsa',
                                                 security_group='default',
                                                 min_count=min,
@@ -120,7 +120,7 @@ class openstack():
         for s in self.nova.servers.list():
             start = s.created
             uptime = datetime.datetime.now(tz=datetime.timezone.utc)-dateutil.parser.isoparse(start)
-            if s.name[:5]=='spot-' and 'lhcb' in s.networks:
-                servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb'][0]))
+            if s.name[:5]=='spot-' and 'lhcb2' in s.networks:
+                servers.append(server(s, s.name, s.status, uptime, s.networks['lhcb2'][0]))
         logger.debug(f'Instances: {[str(s) for s in servers]}')
         return servers
