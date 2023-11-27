@@ -116,7 +116,7 @@ class instance():
 
     def condor_queue(self):
         """Report on the job queue in Condor"""
-        output = subprocess.run(['condor_q', '-global'], stdout=subprocess.PIPE, encoding='utf-8').stdout
+        output = subprocess.run(['condor_q'], stdout=subprocess.PIPE, encoding='utf-8').stdout
         for line in output.split('\n'):
             match = re.match(
                 r'^Total for all users: (?P<jobs>[\.0-9]+) jobs;'+
