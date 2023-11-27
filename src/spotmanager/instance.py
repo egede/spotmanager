@@ -19,8 +19,16 @@ class instance():
     def __init__(self, instances, keysfile):
         self.hosts = instances
         self.keysfile = keysfile
-        logger.debug('Dealing with hosts {[h.name for h in self.hosts]}')
-        
+        logger.debug(f'Dealing with hosts {[h.name for h in self.hosts]}')
+
+    def allowssh(self):
+        """Allow ssh to the instances"""
+        for host in self.hosts:
+            ip = host.ip
+            logger.info(f'Allowing ssh to {ip}.')
+            subprocess.run(f'ssh-keygen -R {ip}', shell=True)
+            subprocess.run(f'ssh-keyscan -H {ip} >> ~/.ssh/known_hosts', shell=True)
+
     def command(self, command, timeout=60, sudo=False):
         """Execute a command on the instances. This will be done using an ssh command and potentially with sudo"""
         logger.info(f'Executing {command} with sudo {sudo}.')
@@ -51,6 +59,7 @@ class instance():
         with a reboot of all the instances (to upgrade the kernel)."""
         logger.info('Configuring hosts')
 
+        self.allowssh()
         nwait = 5
         for i in range(nwait):
             try:
