@@ -54,7 +54,6 @@ class openstack():
                                                 availability_zone=zone,
                                                 nics = [{'net-id': self.nova.neutron.find_network('lhcb2').id}],
                                                 key_name='rsa',
-                                                security_group='default',
                                                 min_count=min,
                                                 max_count=max)
         else:
@@ -63,7 +62,6 @@ class openstack():
                                                 flavor=self.nova.flavors.find(name='p3.medium'),
                                                 nics = [{'net-id': self.nova.neutron.find_network('lhcb2').id}],
                                                 key_name='rsa',
-                                                security_group='default',
                                                 min_count=min,
                                                 max_count=max)
         return instance
