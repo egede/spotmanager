@@ -55,8 +55,12 @@ class manager():
             self.os.create(name=name, max=n_newhosts, zone=zone)
             for i in range(5*sleepfactor):
                 time.sleep(60)
-                allhosts = self.os.instances()
-                newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
+                try:
+                    allhosts = self.os.instances()
+                    newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
+                except Exception as e:
+                    logger.error(f'Failed to connect to Openstack with error {e}')
+                    newhosts = []
                 if len(newhosts) >= n_newhosts:
                     break
                 logger.info(f'{len(newhosts)}/{n_newhosts} created')
