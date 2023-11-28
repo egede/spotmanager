@@ -34,9 +34,9 @@ class manager():
                     if h.uptime > datetime.timedelta(hours=4):
                         toretire.append(h)
 
-        logger.info(f'Will kill the hosts: {[h.name for h in tokill]}')
+        logger.info(f'Will kill the hosts: {[h.name for h in tokill]} - pausing for {sleepfactor} minute(s).')
         self.os.delete(tokill)
-        time.sleep(sleepfactor*20)
+        time.sleep(sleepfactor*60)
 
         retire_instances = instance(toretire, self.keysfile)
         logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
@@ -51,10 +51,13 @@ class manager():
         if n_newhosts > 0:
             name = 'spot-'+str(uuid.uuid4())
             self.os.create(name=name, max=n_newhosts, zone=zone)
-            time.sleep(sleepfactor*120)
-
-            allhosts = self.os.instances()
-            newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
+            for i in range(5*sleepfactor):
+                time.sleep(60)
+                allhosts = self.os.instances()
+                newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
+                if len(newhosts) >= n_newhosts:
+                    break
+                logger.info(f'{len(newhosts)}/{n_newhosts} created')
             logger.info(f'{len(newhosts)} created with names {[h.name for h in newhosts]}')
             newinstances = instance(newhosts, self.keysfile)
             newinstances.configure()
