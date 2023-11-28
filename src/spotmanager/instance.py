@@ -78,6 +78,8 @@ class instance():
         self.command('timedatectl set-timezone Australia/Melbourne', timeout=60, sudo=True)
         self.command('dnf clean all', timeout=120, sudo=True)
         self.command('dnf update -y', timeout=1200, sudo=True)
+        self.command('systemctl enable condor', timeout=1200, sudo=True)
+        self.command('shutdown -r +1', timeout=120, sudo=True)
         logger.info('Done')
         
     def loadaverage(self):
