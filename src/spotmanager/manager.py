@@ -33,10 +33,12 @@ class manager():
                 else:
                     if h.uptime > datetime.timedelta(hours=4):
                         toretire.append(h)
-
-        logger.info(f'Will kill the hosts: {[h.name for h in tokill]} - pausing for {sleepfactor} minute(s).')
-        self.os.delete(tokill)
-        time.sleep(sleepfactor*60)
+        if len(tokill)>0:
+            logger.info(f'Will kill the hosts: {[h.name for h in tokill]} - pausing for {sleepfactor} minute(s).')
+            self.os.delete(tokill)
+            time.sleep(sleepfactor*60)
+        else:
+            logger.info('No instances to kill')
 
         retire_instances = instance(toretire, self.keysfile)
         logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
