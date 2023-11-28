@@ -75,9 +75,9 @@ class instance():
             logger.info(f'Waiting for servers to go live {i}/{nwait}')
             time.sleep(30)
 
-        self.copy('spot-configure')
-        self.command('chmod a+x ./spot-configure', timeout=600)
-        self.command('./spot-configure', timeout=1800, sudo=True)
+        self.command('timedatectl set-timezone Australia/Melbourne', timeout=60, sudo=True)
+        self.command('dnf clean all', timeout=120, sudo=True)
+        self.command('dnf update -y', timeout=1200, sudo=True)
         logger.info('Done')
         
     def loadaverage(self):
