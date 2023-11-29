@@ -44,7 +44,7 @@ class manager():
         logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
         retire_instances.condor_retire()
 
-        n_newhosts = min(maxhosts - len(hosts) + len(tokill), instances.condor_queue()['idle'])
+        n_newhosts = min(maxhosts - len(hosts) + len(tokill), (instances.condor_queue()['idle'] -1) // 4 + 1)
         if throttle>=0:
             n_newhosts = min(n_newhosts, throttle)
         
@@ -57,7 +57,7 @@ class manager():
                 time.sleep(60)
                 try:
                     allhosts = self.os.instances()
-                    newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=10)]
+                    newhosts = [h for h in allhosts if h.uptime < datetime.timedelta(minutes=9)]
                 except Exception as e:
                     logger.error(f'Failed to connect to Openstack with error {e}')
                     newhosts = []
@@ -65,5 +65,6 @@ class manager():
                     break
                 logger.info(f'{len(newhosts)}/{n_newhosts} created')
             logger.info(f'{len(newhosts)} created with names {[h.name for h in newhosts]}')
-            newinstances = instance(newhosts, self.keysfile)
-            newinstances.configure()
+            if (len(newhosts) >0):
+                newinstances = instance(newhosts, self.keysfile)
+                newinstances.configure()
