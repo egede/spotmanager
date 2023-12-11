@@ -52,7 +52,7 @@ class openstack():
                                                 image=self.nova.glance.find_image('base-batch'),
                                                 flavor=self.nova.flavors.find(name='p3.medium'),
                                                 availability_zone=zone,
-                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb2').id}],
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
                                                 key_name='rsa',
                                                 min_count=min,
                                                 max_count=max)
@@ -60,7 +60,7 @@ class openstack():
             instance = self.nova.servers.create(name,
                                                 image=self.nova.glance.find_image('base-batch'),
                                                 flavor=self.nova.flavors.find(name='p3.medium'),
-                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb2').id}],
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
                                                 key_name='rsa',
                                                 min_count=min,
                                                 max_count=max)
