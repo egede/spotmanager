@@ -52,7 +52,8 @@ class openstack():
                                                 image=self.nova.glance.find_image('base-batch'),
                                                 flavor=self.nova.flavors.find(name='p3.medium'),
                                                 availability_zone=zone,
-                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id}],
+                                                nics = [{'net-id': self.nova.neutron.find_network('lhcb').id},
+                                                        {'net-id': self.nova.neutron.find_network('Classic Provider').id}],
                                                 key_name='rsa',
                                                 min_count=min,
                                                 max_count=max)
