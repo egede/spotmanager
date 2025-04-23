@@ -44,7 +44,7 @@ class manager():
         logger.info(f'Will retire the hosts: {[h.name for h in toretire]}')
         retire_instances.condor_retire()
 
-        n_newhosts = min(maxhosts - len(hosts) + len(tokill), (instances.condor_queue()['idle'] -1) // 4 + 1)
+        n_newhosts = min(maxhosts - len(hosts) + len(tokill), (instances.condor_queue()['idle'] -1) // 2 + 1)
         if throttle>=0:
             n_newhosts = min(n_newhosts, throttle)
         

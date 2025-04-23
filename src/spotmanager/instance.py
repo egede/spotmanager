@@ -78,10 +78,14 @@ class instance():
         self.command('timedatectl set-timezone Australia/Melbourne', timeout=60, sudo=True)
         self.command('dnf clean all', timeout=120, sudo=True)
         self.command('dnf update -y', timeout=1200, sudo=True)
+        cvmfsstatus = self.cvmfsstatus()
+        for host, status in cvmfsstatus.items():
+            if status != 0:
+                logger.error(f'cvmfs not available on {host}')
         self.command("echo -e 'NETWORK_INTERFACE = ' $(ifconfig | awk '/inet / {print $2}' | grep ^192) '\n' > 51-network", 
                      timeout=1200, sudo=False)
         self.command("cp 51-network /etc/condor/config.d/51-network", timeout=1200, sudo=True)
-        self.command('systemctl enable condor', timeout=1200, sudo=True)
+        self.command('cvmfs_config probe lhcb.cern.ch && systemctl enable condor', timeout=1200, sudo=True)
         self.command('shutdown -r +1', timeout=120, sudo=True)
         logger.info('Done')
         
@@ -93,7 +97,16 @@ class instance():
         for h, o1, o2 in zip(self.hosts, output1, output2):
             loads[h.name] = float(next(o1.stdout))/float(next(o2.stdout))
         return loads
-        
+
+    def cvmfsstatus(self):
+        """Return a dictionary with the status of cvmfs on the instances. This is done by checking if the lhcb.cern.ch
+        repository is available. The status is 0 if the repository is available and 1 if it is not."""
+        status = {}
+        output = self.command("cvmfs_config probe lhcb.cern.ch | grep OK | echo $?")
+        for h, o in zip(self.hosts, output):
+            status[h.name] = o.stdout
+        return status
+
     def condor_status(self):
         output = subprocess.run('condor_status', stdout=subprocess.PIPE, encoding='utf-8').stdout
         
