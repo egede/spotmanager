@@ -104,7 +104,7 @@ class instance():
         status = {}
         output = self.command("cvmfs_config probe lhcb.cern.ch | grep OK | echo $?")
         for h, o in zip(self.hosts, output):
-            status[h.name] = o.stdout
+            status[h.name] = int(o.stdout)
         return status
 
     def condor_status(self):
