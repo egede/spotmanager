@@ -78,7 +78,7 @@ class instance():
         self.command('timedatectl set-timezone Australia/Melbourne', timeout=60, sudo=True)
         self.command('dnf clean all', timeout=120, sudo=True)
         self.command('dnf update -y', timeout=1200, sudo=True)
-        logger.info(f'The status of cvmfs on the instances is {self.cvmfsstatus()}')
+#        logger.info(f'The status of cvmfs on the instances is {self.cvmfsstatus()}')
         self.command("echo -e 'NETWORK_INTERFACE = ' $(ifconfig | awk '/inet / {print $2}' | grep ^192) '\n' > 51-network", 
                      timeout=1200, sudo=False)
         self.command("cp 51-network /etc/condor/config.d/51-network", timeout=1200, sudo=True)
