@@ -99,7 +99,7 @@ class instance():
         """Return a dictionary with the status of cvmfs on the instances. This is done by checking if the lhcb.cern.ch
         repository is available. The status is 0 if the repository is available and 1 if it is not."""
         status = {}
-        output = self.command("cvmfs_config probe lhcb.cern.ch | grep OK | echo $?")
+        output = self.command("cvmfs_config probe lhcb.cern.ch | grep OK | echo $?", timeout=120)
         for h, o in zip(self.hosts, output):
             status[h.name] = int(o.stdout)
         return status
