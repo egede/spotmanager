@@ -119,6 +119,17 @@ class instance():
         logger.debug(status)
         return status
 
+    def pilot_fails(self):
+        output = subprocess.run("sudo find /home/dirac/localsite/output -mmin -90 -type f -name '*.out'"+
+                                "| sudo xargs grep -l 'Could not configure DIRAC basics'"+
+                                "| sudo xargs grep 'Host Name' "+
+                                "| sed 's/.*\(spot-.*\)\.novalocal/\1/'"+
+                                "| uniq'",shell=True, stdout=subprocess.PIPE, encoding='utf-8').stdout
+        failed = []
+        for line in output.split('\n'):
+            failed.append(line.strip())
+        logger.info(f'Failed hosts: {failed}')
+        return failed
         
     def condor_retire(self):
         """Retire the instances from condor. This means that jobs keep running on them, but they will

@@ -22,6 +22,7 @@ class manager():
         logger.info(f'Running hosts: {[h.name for h in hosts]}')
         instances = instance(hosts, self.keysfile)
         status = instances.condor_status()
+        pilot_fails = instances.pilot_fails()
         tokill = []
         toretire = []
 
@@ -33,6 +34,9 @@ class manager():
                 else:
                     if h.uptime > datetime.timedelta(hours=4):
                         toretire.append(h)
+                if host in pilot_fails:
+                    logger.info(f'Pilot failed on {h.name} - will retire')
+                    toretire.append(h)
         if len(tokill)>0:
             logger.info(f'Will kill the hosts: {[h.name for h in tokill]} - pausing for {sleepfactor} minute(s).')
             self.os.delete(tokill)
