@@ -34,7 +34,7 @@ class manager():
                 else:
                     if h.uptime > datetime.timedelta(hours=4):
                         toretire.append(h)
-                if host in pilot_fails:
+                if h.name in pilot_fails:
                     logger.info(f'Pilot failed on {h.name} - will retire')
                     toretire.append(h)
         if len(tokill)>0:
