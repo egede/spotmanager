@@ -120,14 +120,21 @@ class instance():
         return status
 
     def pilot_fails(self):
-        output = subprocess.run("sudo find /home/dirac/localsite/output -mmin -90 -type f -name '*.out'"+
-                                "| sudo xargs grep -l 'Could not configure DIRAC basics'"+
-                                "| sudo xargs grep 'Host Name' "+
-                                "| sed 's/.*\(spot-.*\)\.novalocal/\1/'"+
-                                "| uniq'",shell=True, stdout=subprocess.PIPE, encoding='utf-8').stdout
-        failed = []
-        for line in output.split('\n'):
-            failed.append(line.strip())
+        command = [
+            "sudo find /home/dirac/localsite/output -mmin -9000 -type f -name '*.out'",
+            "sudo xargs grep -l 'Could not configure DIRAC basics'",
+            "sudo xargs grep 'Host Name'",
+            "sed 's/.*\\(spot-.*\\)\\.novalocal/\\1/'",
+            "uniq"
+        ]
+        process = subprocess.Popen(" | ".join(command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+        stdout, stderr = process.communicate()
+
+        if process.returncode != 0:
+            logger.error(f"Error in pilot_fails command: {stderr}")
+            return []
+
+        failed = [line.strip() for line in stdout.split('\n') if line.strip()]
         logger.info(f'Failed hosts: {failed}')
         return failed
         
