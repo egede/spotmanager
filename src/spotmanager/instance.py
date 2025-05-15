@@ -121,7 +121,7 @@ class instance():
 
     def pilot_fails(self):
         command = [
-            "sudo find /home/dirac/localsite/output -mmin -9000 -type f -name '*.out'",
+            "sudo find /home/dirac/localsite/output -mmin -90 -type f -name '*.out'",
             "sudo xargs grep -l 'Could not configure DIRAC basics'",
             "sudo xargs grep 'Host Name'",
             "sed 's/.*\\(spot-.*\\)\\.novalocal/\\1/'",
