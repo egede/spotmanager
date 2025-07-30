@@ -17,7 +17,7 @@ class manager():
         self.os = openstack(configfile)
         self.keysfile = keysfile
     
-    def event(self, maxhosts=25, sleepfactor=1, remove=False, zone='', throttle=-1):
+    def event(self, maxhosts=25, sleepfactor=1, remove=False, zone='', throttle=-1, flavour=''):
         hosts = self.os.instances()
         logger.info(f'Running hosts: {[h.name for h in hosts]}')
         instances = instance(hosts, self.keysfile)
@@ -56,7 +56,7 @@ class manager():
         
         if n_newhosts > 0:
             name = 'spot-'+str(uuid.uuid4())
-            self.os.create(name=name, max=n_newhosts, zone=zone)
+            self.os.create(name=name, max=n_newhosts, zone=zone, flavour=flavour)
             for i in range(5*sleepfactor):
                 time.sleep(60)
                 try:
