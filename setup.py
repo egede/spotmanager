@@ -143,6 +143,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'python-openstackclient',
+        'python-novaclient',
         'python-dateutil',
         'parallel-ssh',
         'gevent',
