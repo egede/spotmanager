@@ -20,6 +20,8 @@ def main():
                     help="Private key to use for authentication to instances.")
     ap.add_argument("-l", "--logfile", default="spotmanager.log",
                     help="File to write logging information to.")
+    ap.add_argument("-f", "--flavour", default="p3.medium",
+                    help="Instance flavour to use when launching spot instances.")
     ap.add_argument("-n", "--number-hosts", type=int, default=25,
                     help="The maximum number of instances to have at the same time.")
     ap.add_argument("-r", "--remove", action="count",
@@ -58,7 +60,7 @@ def main():
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
     m = manager(args.configfile, args.keyfile)
-    m.event(maxhosts=args.number_hosts, sleepfactor=args.sleepfactor, remove=remove_instances, throttle=args.throttle, zone=args.zone)
+    m.event(maxhosts=args.number_hosts, sleepfactor=args.sleepfactor, remove=remove_instances, throttle=args.throttle, zone=args.zone, flavour=args.flavour)
     logger.info('Stopping')
 
 if __name__ == '__main__':

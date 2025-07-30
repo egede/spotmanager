@@ -46,11 +46,11 @@ class openstack():
         self.nova = nova_client('2.1',session=self.session)
         logger.info(f"Project is: user: {env['OS_USERNAME']}, project: {env['OS_PROJECT_ID']}, domain: {env['OS_USER_DOMAIN_NAME']}")
 
-    def create(self, name='spot-test', min=1, max=1, zone=""):
+    def create(self, name='spot-test', min=1, max=1, zone="", flavour='p3.medium'):
         if len(zone)>0:
             instance = self.nova.servers.create(name,
                                                 image=self.nova.glance.find_image('base-batch'),
-                                                flavor=self.nova.flavors.find(name='p3.medium'),
+                                                flavor=self.nova.flavors.find(name=flavour),
                                                 availability_zone=zone,
                                                 nics = [{'net-id': self.nova.neutron.find_network('lhcb').id},
                                                         {'net-id': self.nova.neutron.find_network('Classic Provider').id}],
