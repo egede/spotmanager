@@ -124,7 +124,7 @@ class instance():
             "sudo find /home/dirac/localsite/output -mmin -90 -type f -name '*.out'",
             "sudo xargs grep -l 'Could not configure DIRAC basics'",
             "sudo xargs grep 'Host Name'",
-            "sed 's/.*\\(spot-.*\\)\\.novalocal/\\1/'",
+            "sed 's/.*\\(batch-.*\\)\\.novalocal/\\1/'",
             "uniq"
         ]
         process = subprocess.Popen(" | ".join(command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
