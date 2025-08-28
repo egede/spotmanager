@@ -1,7 +1,7 @@
 """Manange instances in an openstack cloud"""
 import datetime
 import time
-import uuid
+import nanoid
 import logging
 
 from spotmanager.openstack import openstack
@@ -61,7 +61,7 @@ class manager():
         logger.info(f'Will create {max(0, n_newhosts)} new hosts')
         
         if n_newhosts > 0:
-            name = 'batch-'+flavour+"-"+str(uuid.uuid4())
+            name = 'batch-'+flavour+"-"+nanoid.generate(size=16)
             self.os.create(name=name, max=n_newhosts, zone=zone, flavour=flavour)
             for i in range(5*sleepfactor):
                 time.sleep(60)
