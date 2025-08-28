@@ -149,6 +149,7 @@ setup(
         'gevent',
         'slack-bolt',
         'htcondor',
+        'nanoid',
     ],
 
     # List additional groups of dependencies here (e.g. development
