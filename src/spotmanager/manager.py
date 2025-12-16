@@ -17,7 +17,7 @@ class manager():
         self.os = openstack(configfile)
         self.keysfile = keysfile
     
-    def event(self, maxhosts=25, sleepfactor=1, remove=False, zone='', throttle=-1, flavour=''):
+    def event(self, maxhosts=25, sleepfactor=1, remove=False, zone='', throttle=-1, flavour='', prefix='batch-p'):
         hosts = self.os.instances()
         logger.info(f'Running hosts: {[h.name for h in hosts]}')
         instances = instance(hosts, self.keysfile)
@@ -61,7 +61,7 @@ class manager():
         logger.info(f'Will create {max(0, n_newhosts)} new hosts')
         
         if n_newhosts > 0:
-            name = 'batch-'+flavour+"-"+nanoid.generate(size=16)
+            name = prefix+'-'+flavour+"-"+nanoid.generate(size=16)
             self.os.create(name=name, max=n_newhosts, zone=zone, flavour=flavour)
             for i in range(5*sleepfactor):
                 time.sleep(60)

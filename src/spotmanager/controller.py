@@ -24,6 +24,8 @@ def main():
                     help="Instance flavour to use when launching spot instances.")
     ap.add_argument("-n", "--number-hosts", type=int, default=25,
                     help="The maximum number of instances to have at the same time.")
+    ap.add_argument("-N", "--name", default='batch-p',
+                    help="The name prefix to use for instances.")
     ap.add_argument("-r", "--remove", action="count",
                     help="Delete idle preemtible instances. Usually this option should be given but as it is dangerous it is not the default.")
     ap.add_argument("-s", "--stdout", action="count",
@@ -60,7 +62,13 @@ def main():
     logger.info('Starting')
     logger.debug('Verbose mode is enabled.')
     m = manager(args.configfile, args.keyfile)
-    m.event(maxhosts=args.number_hosts, sleepfactor=args.sleepfactor, remove=remove_instances, throttle=args.throttle, zone=args.zone, flavour=args.flavour)
+    m.event(maxhosts=args.number_hosts, 
+            sleepfactor=args.sleepfactor, 
+            remove=remove_instances, 
+            throttle=args.throttle, 
+            zone=args.zone, 
+            flavour=args.flavour,
+            nameprefix=args.name)
     logger.info('Stopping')
 
 if __name__ == '__main__':
