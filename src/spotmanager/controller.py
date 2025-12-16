@@ -68,7 +68,7 @@ def main():
             throttle=args.throttle, 
             zone=args.zone, 
             flavour=args.flavour,
-            nameprefix=args.name)
+            prefix=args.name)
     logger.info('Stopping')
 
 if __name__ == '__main__':
